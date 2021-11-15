@@ -25,9 +25,6 @@ import_arp2gen_files = function(mypath, mypattern) {
   temp_list_2
 } 
 
-#importing and converting files
-import_arp2gen_files(mydir,".arp$")
-
 #creating a function to convert genepop files to genalex files
 #there 2 main steps--first you need to convert genepop files to genind objects
 #then you convert genind objects to genalex files
@@ -42,45 +39,6 @@ import_gen2genalex_files = function(mypath, mypattern) {
   }
   temp_list_3 #retun
 }
-
-
-#importing and converting files to genalex
-import_gen2genalex_files(mydir, ".gen$")
-
-#NOTE: Will need to import genalex files as a dataframe (likely inside the main processing loop)
-#also, will need to do some processing on the dataframe (cut out first 2 rows -- population data)
-
-##############################################################################################################
-#DEFINING VARIABLES 
-
-#number of loci modeled in simulations
-num_loci = 1
-
-#number of trees in population
-total_trees = 100
-#number of trees in population that collectors will sample from
-trees_to_sample = 10
-#number of seeds collectors will sample from each tree
-seeds_to_sample = 10
-
-#number of pollen donors per maternal tree
-num_pollen_donors = 1 #defined as 1 for simplicity
-pollen_probability = c(1) #defined as 1 since there is 1 father per mother
-#can change this vector as number of fathers increases, will be proportions, eg., 0.2, 0.2, 0.6 (but should add up to 1!)
-
-#defining array to store seeds that collectors have 'sampled'
-#first we need to create column names depending on how many loci are present in simulations
-#then, define the matrix, convert to dataframe, and rename the columns to label the data
-#this dataframe keeps track of the alleles that are captured during sampling
-loci_names = c()
-for(i in 1:num_loci){
-  loci_names = c(loci_names, paste("locus", i, "a", sep=""))
-  loci_names = c(loci_names, paste("locus", i, "b", sep=""))
-}
-
-seeds_sampled = matrix(nrow = total_trees, ncol = (2*num_loci))
-seeds_sampled = as.data.frame(seeds_sampled)
-names(seeds_sampled) = c(loci_names)
 
 ##########################################################################################
 #sample_seed() function
