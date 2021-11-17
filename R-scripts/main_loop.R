@@ -19,7 +19,7 @@ library(poppr)
 source("C:\\Users\\kayle\\Documents\\Pollen_dispersal_sims\\R-scripts\\defining_functions.R")
 
 #defining the working directory containing simulation files
-mydir = "C:\\Users\\kayle\\Documents\\Pollen_dispersal_sims\\Simulations\\example_population"
+mydir = "C:\\Users\\kayle\\Documents\\Pollen_dispersal_sims\\Simulations\\example_population_2"
 setwd(mydir)
 
 #importing and converting arlequin files to genepop files
@@ -32,7 +32,7 @@ import_gen2genalex_files(mydir, ".gen$")
 #DEFINING VARIABLES 
 
 #number of loci modeled in simulations
-num_loci = 1
+num_loci = 5
 
 #number of trees in population
 total_trees = 100
@@ -75,10 +75,13 @@ for(i in 1:length(genalex_list)) {
   #cut off first 2 rows in dataframe -- the population data is not required for this
   data = data[-2,]
   data = data[-1,]
-  data = data[,-5] #getting rid of the empty column
   #giving the dataframe columns new names
   names(data) = c("Ind", "Pop", loci_names)
   data = data[-1,] #removing the first row -- repeat of now column headers
   
   #call sampling function here--save result in 3D matrix? (third dim. is for replicates?)
 }
+
+#call sample seed function
+#args: data, num trees, num seeds, num donors, probability, loci
+sample_seed(data, 10, 10, 5, c(rep(0.2,5)), 5)
