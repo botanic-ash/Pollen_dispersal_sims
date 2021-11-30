@@ -47,44 +47,57 @@ import_gen2genalex_files = function(mypath, mypattern) {
 #arugments:
   #data: the data imported from genalex files
   #num_trees_to_sample: number of trees in the population collectors will sample seed from 
-  # num_seeds_to_sample: number of seeds collectors will take from each tree
+  #num_seeds_to_sample: number of seeds collectors will take from each tree *CHANGE THIS TO BE A VECTOR OF VARYING SAMPLE SIZES PER TREE
   #num_pollen_donors: the number of trees that donate pollen to a single mother tree
   #pollen_probability: the probability of pollen donors to pollinate a mother tree (it can be equal for all donors, or skewed)
-  #num_loci: number of loci simulated 
-sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_pollen_donors, pollen_probability, num_loci) {
+  #num_loci: number of loci simulated *TAKE THIS VARIABLE OUT, calculate by number of columns-2/2
+sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_pollen_donors, pollen_probability) {
   #loop over x number of trees collectors are sampling from
   i=1 #simple counter variable to keep track of the current row (individual) 
-  for(x in 1:trees_to_sample) {
-    #choose mother
-    mother <- sample(total_trees, 1) #selecting a row from the dataframe 
-    #choose father(s) randomly -- a vector of rows representing potential pollen donors  
-    fathers <- sample(total_trees, num_pollen_donors)
+  #defining the number of loci simulated
+  num_loci = ((ncol(data)-2)/2)
+  #defining the number of populations simulated
+  dat_uniq = unique(data$Pop)
+  num_pops = length(dat_uniq)
+  for(w in 1:num_pops) {
+    #subset data to for the current population group
+    temp_data = data[which(data$Pop==paste("pop", w, sep="")),]
+    total_trees = nrow(temp_data)
+    for(x in 1:trees_to_sample) {
+      #choose mother
+      mother <- sample(total_trees, 1) #selecting a row from the dataframe 
+      #choose father(s) randomly -- a vector of rows representing potential pollen donors  
+      fathers <- sample(total_trees, num_pollen_donors)
+      
+      #create y number of seeds that collectors are sampling per tree
+      #NOTE: change this loop to not sample an equal number from each tree 
+      #SELECT A SIZE FROM THE VECTOR THEN LOOP THROUGH
+      for(y in 1:seeds_to_sample) {
+        #choose father based on probability vector 
+        if(length(fathers)>1){
+          donor <- sample(fathers, 1, prob = pollen_probability)
+        }else if (length(fathers==1)){
+          donor = fathers
+        }
     
-    #create y number of seeds that collectors are sampling per tree
-    for(y in 1:seeds_to_sample) {
-      #choose father based on probability vector 
-      if(length(fathers)>1){
-        donor <- sample(fathers, 1, prob = pollen_probability)
-      }else if (length(fathers==1)){
-        donor = fathers
+        #Loop over number of loci simulated, in order to save the data
+        j=1 #counter variable to keep track of the current column
+        for(z in 1:num_loci) {
+          #then select allele from father randomly, save
+          p_alleles = c(temp_data[donor,paste("locus", z, "a", sep="")], data[donor,paste("locus", z, "b", sep="")])
+          seeds_sampled[i,j] = sample(p_alleles,1)
+          j=j+1
+          #select allele randomly for mother, save
+          m_alleles = c(temp_data[mother,paste("locus", z, "a", sep="")], data[mother,paste("locus", z, "b", sep="")])
+          seeds_sampled[i,j] = sample(m_alleles,1)
+          j=j+1
+        }
+        seeds_sampled[i,j] = paste("pop", w, sep="")
+        i=i+1
       }
-  
-      #Loop over number of loci simulated, in order to save the data
-
-      j=1 #counter variable to keep track of the current column
-      for(z in 1:num_loci) {
-        #then select allele from father randomly, save
-        p_alleles = c(data[donor,paste("locus", z, "a", sep="")], data[donor,paste("locus", z, "b", sep="")])
-        seeds_sampled[i,j] = sample(p_alleles,1)
-        j=j+1
-        #select allele randomly for mother, save
-        m_alleles = c(data[mother,paste("locus", z, "a", sep="")], data[mother,paste("locus", z, "b", sep="")])
-        seeds_sampled[i,j] = sample(m_alleles,1)
-        j=j+1
-      }
-      i=i+1
     }
   }
   seeds_sampled
 }
+
 
