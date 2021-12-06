@@ -51,6 +51,7 @@ import_gen2genalex_files = function(mypath, mypattern) {
   #num_pollen_donors: the number of trees that donate pollen to a single mother tree
   #pollen_probability: the probability of pollen donors to pollinate a mother tree (it can be equal for all donors, or skewed)
   #num_loci: number of loci simulated *TAKE THIS VARIABLE OUT, calculate by number of columns-2/2
+
 sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_pollen_donors, pollen_probability) {
   #loop over x number of trees collectors are sampling from
   i=1 #simple counter variable to keep track of the current row (individual) 
@@ -63,7 +64,7 @@ sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_polle
     #subset data to for the current population group
     temp_data = data[which(data$Pop==paste("pop", w, sep="")),]
     total_trees = nrow(temp_data)
-    for(x in 1:trees_to_sample) {
+    for(x in 1:num_trees_to_sample) {
       #choose mother
       mother <- sample(total_trees, 1) #selecting a row from the dataframe 
       #choose father(s) randomly -- a vector of rows representing potential pollen donors  
@@ -72,7 +73,7 @@ sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_polle
       #create y number of seeds that collectors are sampling per tree
       #NOTE: change this loop to not sample an equal number from each tree 
       #SELECT A SIZE FROM THE VECTOR THEN LOOP THROUGH
-      for(y in 1:seeds_to_sample) {
+      for(y in 1:num_seeds_to_sample[x]) {
         #choose father based on probability vector 
         if(length(fathers)>1){
           donor <- sample(fathers, 1, prob = pollen_probability)

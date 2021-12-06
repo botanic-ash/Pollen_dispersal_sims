@@ -31,18 +31,16 @@ import_gen2genalex_files(mydir, ".gen$")
 ##############################################################################################################
 #DEFINING VARIABLES 
 
-#number of loci modeled in simulations
-#***get rid of this variable - calculated in loop
 num_loci = 5
 
-#number of trees in population
-#***get rid of this variable 
-total_trees = 100
+total_seeds = 250
+
 #number of trees in population that collectors will sample from
+#***NOTE: this will vary by scenario, might end up being a vector? 
 trees_to_sample = 10
 #number of seeds collectors will sample from each tree
-#***this will be changed to vary
-seeds_to_sample = 10
+#***NOTE: this will vary for each tree sampled
+seeds_to_sample = c(5, 15, 15, 20, 20, 25, 30, 30, 40, 50)
 
 #number of pollen donors per maternal tree
 num_pollen_donors = 1 #defined as 1 for simplicity
@@ -59,7 +57,7 @@ for(i in 1:num_loci){
   loci_names = c(loci_names, paste("locus", i, "b", sep=""))
 }
 
-seeds_sampled = matrix(nrow = total_trees, ncol = ((2*num_loci)+1))
+seeds_sampled = matrix(nrow = total_seeds, ncol = ((2*num_loci)+1))
 seeds_sampled = as.data.frame(seeds_sampled)
 names(seeds_sampled) = c(loci_names, "Pop")
 
@@ -87,4 +85,4 @@ for(i in 1:length(genalex_list)) {
 
 #call sample seed function
 #args: data, num trees, num seeds, num donors, probability
-x = sample_seed(data, 10, 10, 5, c(rep(0.2,5)))
+x = sample_seed(data, trees_to_sample, seeds_to_sample, num_pollen_donors, pollen_probability)
