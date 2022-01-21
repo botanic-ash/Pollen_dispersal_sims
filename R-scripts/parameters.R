@@ -36,7 +36,7 @@ for(i in 1:10){
 }
 
 #10 maternal trees
-for(i in 1:20){
+for(i in 1:25){
   assign(paste("list", x, sep=""), list(10,i,1,1)) #all same
   x=x+1
   assign(paste("list", x, sep=""), list(10,i,i, c(rep((1/i),i)))) #all unique*
@@ -66,7 +66,7 @@ for(i in 1:50){
 }
 
 #2 maternal trees
-for(i in 1:100){
+for(i in 1:125){
   assign(paste("list", x, sep=""), list(2,i,1,1)) #all same
   x=x+1
   assign(paste("list", x, sep=""), list(2,i,i, c(rep((1/i),i)))) #all unique*
@@ -97,7 +97,7 @@ for(i in 1:250){
 
 
 #fixed_scenarios = list(list1, list2, list3...)
-#1305 lists of parameters total
+#1395 lists of parameters total
 
 ###############################################################################################
 #skewed seeds/tree
