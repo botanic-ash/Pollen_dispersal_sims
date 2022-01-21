@@ -68,7 +68,8 @@ names(seeds_sampled) = c(loci_names, "Pop")
 
 #list of genalex files for all simulation replicates
 genalex_list = list.files(mydir, ".csv$")
-#for number of simulation replicates
+
+#for every simulation replicate, process data, call function
 for(i in 1:length(genalex_list)) {
   #first import and process the data
   #import genalex files as dataframe
@@ -81,8 +82,10 @@ for(i in 1:length(genalex_list)) {
   data = data[-1,] #removing the first row -- repeat of now column headers
   
   #call sampling function here--save result in 3D matrix? (third dim. is for replicates?)
+  #for each element in scenario list (defined in parameters.R file)
+    #call the function using that scenario and save data
 }
 
 #call sample seed function
 #args: data, num trees, num seeds, num donors, probability
-x = sample_seed(data, trees_to_sample, seeds_to_sample, num_pollen_donors, pollen_probability)
+#x = sample_seed(data, trees_to_sample, seeds_to_sample, num_pollen_donors, pollen_probability)
