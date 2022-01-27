@@ -10,8 +10,6 @@ library(tidyr)
 library(hierfstat)
 library(poppr)
 
-mydir = "C:\\Users\\kayle\\Documents\\Pollen_dispersal_sims\\Simulations\\example_population"
-setwd(mydir)
 ##################################################################################
 #FILE IMPORT AND CONVERSIONS
 
@@ -71,9 +69,7 @@ sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_polle
       fathers <- sample(total_trees, num_pollen_donors)
       
       #create y number of seeds that collectors are sampling per tree
-      #NOTE: change this loop to not sample an equal number from each tree 
-      #SELECT A SIZE FROM THE VECTOR THEN LOOP THROUGH
-      for(y in 1:num_seeds_to_sample[x]) {
+      for(y in 1:(num_seeds_to_sample[x])) {
         #choose father based on probability vector 
         if(length(fathers)>1){
           donor <- sample(fathers, 1, prob = pollen_probability)

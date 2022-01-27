@@ -16,10 +16,10 @@ library(hierfstat)
 library(poppr)
 
 #including R-script containing functions used for import, conversions, and sampling
-source("C:\\Users\\kayle\\Documents\\Pollen_dispersal_sims\\R-scripts\\defining_functions.R")
+source("C:\\Users\\kayle\\Documents\\Pollen_dispersal_sims\\R-scripts\\import_seed_functions.R")
 
 #defining the working directory containing simulation files
-mydir = "C:\\Users\\kayle\\Documents\\Pollen_dispersal_sims\\Simulations\\example_population_2"
+mydir = "C:\\Users\\kayle\\Documents\\Pollen_dispersal_sims\\Simulations\\two_pop_2500"
 setwd(mydir)
 
 #importing and converting arlequin files to genepop files
@@ -31,21 +31,11 @@ import_gen2genalex_files(mydir, ".gen$")
 ##############################################################################################################
 #DEFINING VARIABLES 
 
-num_loci = 5
+num_loci = 20 #number of loci simulated, needed to make a dataframe to save the data
 
-total_seeds = 250
+total_seeds = 250 #total seeds to be sampled 
 
-#number of trees in population that collectors will sample from
-#***NOTE: this will vary by scenario, might end up being a vector? 
-trees_to_sample = 10
-#number of seeds collectors will sample from each tree
-#***NOTE: this will vary for each tree sampled
-seeds_to_sample = c(5, 15, 15, 20, 20, 25, 30, 30, 40, 50)
-
-#number of pollen donors per maternal tree
-num_pollen_donors = 1 #defined as 1 for simplicity
-pollen_probability = c(1) #defined as 1 since there is 1 father per mother
-#can change this vector as number of fathers increases, will be proportions, eg., 0.2, 0.2, 0.6 (but should add up to 1!)
+load("combined_list_params.Rdata")
 
 #defining array to store seeds that collectors have 'sampled'
 #first we need to create column names depending on how many loci are present in simulations
@@ -66,7 +56,7 @@ names(seeds_sampled) = c(loci_names, "Pop")
 #Main processing loop
 #first, import a single simulation replicate as genalex and convert to a dataframe 
 
-#list of genalex files for all simulation replicates
+#list of genalex files for all simulation replicates--genalex files end in .csv
 genalex_list = list.files(mydir, ".csv$")
 
 #for every simulation replicate, process data, call function
@@ -89,3 +79,7 @@ for(i in 1:length(genalex_list)) {
 #call sample seed function
 #args: data, num trees, num seeds, num donors, probability
 #x = sample_seed(data, trees_to_sample, seeds_to_sample, num_pollen_donors, pollen_probability)
+temp = sample_seed(data, combined_list_params[[1]][[1]], combined_list_params[[1]][[2]], combined_list_params[[1]][[3]], combined_list_params[[1]][[4]])
+#third parameter is currently causing issues--assuming the next two will as well 
+
+
