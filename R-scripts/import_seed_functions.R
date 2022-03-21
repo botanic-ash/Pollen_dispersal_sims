@@ -1,16 +1,4 @@
 ##################################################################################
-#Library functions
-library(adegenet)
-library(car)
-library(diveRsity)
-library(ggplot2)
-library(ggpubr)
-library(ggsignif)
-library(tidyr)
-library(hierfstat)
-library(poppr)
-
-##################################################################################
 #FILE IMPORT AND CONVERSIONS
 
 #Defining an import function
@@ -58,6 +46,13 @@ sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_polle
   #defining the number of populations simulated
   dat_uniq = unique(data$Pop)
   num_pops = length(dat_uniq)
+  #defining seeds_sampled to store results
+  trees = num_trees_to_sample
+  seeds = num_seeds_to_sample[1]#should be x, but x hasn't been defined yet, and we can't define this below
+  seeds_sampled = array(dim=c((num_pops*trees*seeds), ((num_loci*2)+1))) #defining the array to store the results of the function in
+  seeds_sampled = as.data.frame(seeds_sampled) #making it a data frame because it's easier to work with
+  #number rows = total number of seeds sampled (number of populations*number of trees per pop*number of seeds per tree)
+  #number columns = genotype of each seed sampled number of loci*2 (for two alleles) + 1 (to track the population)
   for(w in 1:num_pops) {
     #subset data to for the current population group
     temp_data = data[which(data$Pop==paste("pop", w, sep="")),]
@@ -76,7 +71,6 @@ sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_polle
         }else if (length(fathers==1)){
           donor = fathers
         }
-    
         #Loop over number of loci simulated, in order to save the data
         j=1 #counter variable to keep track of the current column
         for(z in 1:num_loci) {

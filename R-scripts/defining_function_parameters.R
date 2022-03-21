@@ -20,8 +20,10 @@ num_maternal_trees = c(50, 25, 10, 5, 2, 1) #different number of maternal trees 
 
 #All same scenarios
 x = 1 #x is the list counter variable that names each of the lists
-for(i in 1:length(num_maternal_trees)) { #loops over the vector of maternal trees
-  for(j in 1:(250/num_maternal_trees[i])) { #loops ofrom 1 to max number number of seeds to sample per maternal tree
+#this makes it easier to save the data, we can't use i because it only goes up to 5, and j varies each time it iterates
+#x keeps track of the position in the list across each of the loops
+for(i in 1:length(num_maternal_trees)) { #loops over the vector num_maternal_trees
+  for(j in 1:(250/num_maternal_trees[i])) { #loops from 1 to max number number of seeds to sample per maternal tree
     temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), 1, 1) #All Same scenario--all seeds created from 1 pollen donor
     all_same_params[[x]] = temp #saving the parameters to a list (list of lists)
     x=x+1 #increment counter
@@ -29,7 +31,9 @@ for(i in 1:length(num_maternal_trees)) { #loops over the vector of maternal tree
 }
 
 #All eligible scenarios
-x = 1
+x = 1 #x is the list counter variable that names each of the lists
+#this makes it easier to save the data, we can't use i because it only goes up to 5, and j varies each time it iterates
+#x keeps track of the position in the list across each of the loops
 for(i in 1:length(num_maternal_trees)) { #loops over the vector of maternal trees
   for(j in 1:(250/num_maternal_trees[i])) { #loops ofrom 1 to max number number of seeds to sample per maternal tree
     temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(rep((1/j), j))) #All Unique* scenario--each pollen donor has equal probability to pollinate seeds
@@ -39,24 +43,27 @@ for(i in 1:length(num_maternal_trees)) { #loops over the vector of maternal tree
 }
 
 #Skewed scenarios
-x = 1
+x = 1#x is the list counter variable that names each of the lists
+#this makes it easier to save the data, we can't use i because it only goes up to 5, and j varies each time it iterates
+#x keeps track of the position in the list across each of the loops
 for(i in 1:length(num_maternal_trees)) { #loops over the vector of maternal trees
   for(j in 1:(250/num_maternal_trees[i])) { #loops ofrom 1 to max number number of seeds to sample per maternal tree
-    #Skewed scenarios--multiple pollen donors, but 1 donates the majority of the pollen (80%), the rest have equal probability to donate
+    #we have multiple different donor scenarios for skewed donation
     if(j==1) {
-      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), 1, 1) #if there's only one seed, it can't be skewed
+      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), 1, 1) #if there's only one seed, it can't be skewed, so it donates 100% pollen
     } else if (j==2) {
       temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.8, 0.2)) # if only 2 pollen donors, then 1 80% and 1 20% 
     } else if (j==3) {
-      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.2))
+      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.2)) #if 3 donors, then 2 donate 40%, and 1 donates 20%
     } else if (j==4) {
-      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.1, 0.1))
+      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.1, 0.1)) #if 4 donors, 40%, 40%, 10% and 10%
     } else if (j==5) {
-      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.1, 0.05, 0.05))
+      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.1, 0.05, 0.05)) #if 5 donors, 40%, 40%, 10%, 5%, 5%
     } else if (j>=6&&j<14) {
-      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.5, 0.5, rep((0.1/(j-4)), (j-4)))) 
+      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.5, 0.5, rep((0.1/(j-4)), (j-4)))) #if 6 or more donors (up to 13), then two donate 40%, two donate 5%, and the remaining 10% is split evenly among donors
     } else if (j>=14) {
-      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), 14, c(0.4, 0.4, 0.5, 0.5, rep((0.1/10), (10)))) #cap on pollen donors is 14 total (such that the lowest probability to donate pollen is 1%)
+      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), 14, c(0.4, 0.4, 0.5, 0.5, rep((0.1/10), (10)))) #if 14 or more donors, two donate 40%, two donate 5% and the remaining 10% is split evenly among 10 donors--
+        #cap on pollen donors is 14 total (such that the lowest probability to donate pollen is 1%)
     }
     skewed_params[[x]] = temp #saving parameters
     x=x+1
