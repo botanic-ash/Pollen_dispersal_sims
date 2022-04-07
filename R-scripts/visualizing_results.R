@@ -7,11 +7,124 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 
-#Preparing data for plotting
-combined_data = rbind(prop_capt_all_same[,,1], prop_capt_all_eligible[,,1], prop_capt_skewed[,,1])
-combined_data = as.data.frame(combined_data)
-filtered = combined_data %>% filter(maternal_trees == 10)
+#arrays to save averaged results
+prop_capt_all_same_avg = array(dim=c(465,5))
+prop_capt_all_eligible_avg = array(dim=c(465,5))
+prop_capt_skewed_avg = array(dim=c(465,5))
+colnames(prop_capt_all_same_avg) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
+colnames(prop_capt_all_eligible_avg) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
+colnames(prop_capt_skewed_avg) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
 
-ggplot(data=filtered, aes(x=total_seeds, y=prop_capt, color=donor_type)) +
+#looping over each scenario (row = 465) to get the average prop. alleles captured in each replicate (slice ~640)
+#and for each donor type (why the code is repeated 3x)
+for(i in 1:465) {
+  #ALL SAME
+  avg_prop_all_capt = mean(as.numeric(prop_capt_all_same[i,1,]), na.rm = TRUE) #calculates the means of all replicates for one scenario
+  #saving results
+  prop_capt_all_same_avg[i,] = prop_capt_all_same[i,,1] #copying over data from previous array
+  prop_capt_all_same_avg[i,1] = avg_prop_all_capt
+  
+  #ALL ELIGIBLE
+  avg_prop_all_capt = mean(as.numeric(prop_capt_all_eligible[i,1,]), na.rm = TRUE) #calculates the means of all replicates for one scenario
+  #saving results
+  prop_capt_all_eligible_avg[i,] = prop_capt_all_eligible[i,,1] #copying over data from previous array
+  prop_capt_all_eligible_avg[i,1] = avg_prop_all_capt
+  
+  #SKEWED
+  avg_prop_all_capt = mean(as.numeric(prop_capt_skewed[i,1,]), na.rm = TRUE) #calculates the means of all replicates for one scenario
+  #saving results
+  prop_capt_skewed_avg[i,] = prop_capt_skewed[i,,1] #copying over data from previous array
+  prop_capt_skewed_avg[i,1] = avg_prop_all_capt
+}
+
+#Preparing data for plotting
+#combining each of the separate arrays into one large array for plotting
+combined_data = rbind(prop_capt_all_same_avg, prop_capt_all_eligible_avg, prop_capt_skewed_avg)
+combined_data = as.data.frame(combined_data) #converting array to dataframe to use in ggplot
+
+###############################################################
+#First, looking into total seeds vs. prop alleles capt for each donor type
+
+#filtering the data--looking at 10 maternal trees only
+#when we try to plot all numbers of maternal trees on one plot, it gets too busy
+#we need to have some constants
+filtered = combined_data %>% filter(maternal_trees == 10)
+ggplot(data=filtered, aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), group=donor_type, color=donor_type)) +
   geom_line() +
-  geom_point()
+  xlab("Total seeds sampled") +
+  ylab("Proportion of alleles captured") +
+  ggtitle("Diversity captured from sampling 10 maternal trees")
+
+#looking at 50 maternal trees
+filtered = combined_data %>% filter(maternal_trees == 50)
+ggplot(data=filtered, aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), group=donor_type, color=donor_type)) +
+  geom_line() +
+  xlab("Total seeds sampled") +
+  ylab("Proportion of alleles captured") +
+  ggtitle("Diversity captured from sampling 50 maternal trees")
+
+filtered = combined_data %>% filter(maternal_trees == 1)
+ggplot(data=filtered, aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), group=donor_type, color=donor_type)) +
+  geom_line() +
+  xlab("Total seeds sampled") +
+  ylab("Proportion of alleles captured") +
+  ggtitle("Diversity captured from sampling 1 maternal trees")
+
+################################################################
+#Next looking into diversity captured vs. number of maternal trees sampled
+#need to have a constant--total seeds sampled will be constant
+
+#first, looking at a total size of 100 seeds
+filtered = combined_data %>% filter(total_seeds == 100)
+ggplot(data=filtered, aes(x=as.numeric(maternal_trees), y=as.numeric(prop_capt), group=donor_type, color=donor_type)) +
+  geom_line() +
+  xlab("Number of maternal trees sampled") +
+  ylab("Proportion of alleles captured") +
+  ggtitle("Diversity captured from sampling 100 total seeds from varying maternal trees")
+
+#next looking at 200 seeds
+filtered = combined_data %>% filter(total_seeds == 200)
+ggplot(data=filtered, aes(x=as.numeric(maternal_trees), y=as.numeric(prop_capt), group=donor_type, color=donor_type)) +
+  geom_line() +
+  xlab("Number of maternal trees sampled") +
+  ylab("Proportion of alleles captured") +
+  ggtitle("Diversity captured from sampling 200 total seeds from varying maternal trees")
+
+#next looking at 50 seeds
+filtered = combined_data %>% filter(total_seeds == 50)
+ggplot(data=filtered, aes(x=as.numeric(maternal_trees), y=as.numeric(prop_capt), group=donor_type, color=donor_type)) +
+  geom_line() +
+  xlab("Number of maternal trees sampled") +
+  ylab("Proportion of alleles captured") +
+  ggtitle("Diversity captured from sampling 50 total seeds from varying maternal trees")
+
+###########################################################
+#comparing equivalent scenarios 
+#comparing sampling 25 maternal trees 10 seeds from each tree (row 15)
+same_25_10 = array(dim=c(500,2)) #500 rows for 500 replicates, 2 columns for prop_capt and donor type
+eligible_25_10 = array(dim=c(500,2))
+skewed_25_10 = array(dim=c(500,2))
+
+#looping over simulation replicates to pull equivalent scenarios to comapre among donor modes 
+for(i in 1:500) {
+  same_25_10[i,1] = prop_capt_all_same[15,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same_25_10[i,2] = prop_capt_all_same[15,5,i]
+  
+  eligible_25_10[i,1] = prop_capt_all_eligible[15,1,i]
+  eligible_25_10[i,2] = prop_capt_all_eligible[15,5,i]
+    
+  skewed_25_10[i,1] = prop_capt_skewed[15,1,i]
+  skewed_25_10[i,2] = prop_capt_skewed[15,5,i]
+}
+
+#data processing for plotting
+equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = as.data.frame(equal_comparison)
+colnames(equal_comparison) = c("prop_capt", "donor_type")
+#plotting using a boxplot, includes all simulation replicates to note variation 
+ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group=donor_type, fill=donor_type)) +
+  geom_boxplot() +
+  ylab("Proportion of alleles captured") +
+  xlab("Pollen donation type") +
+  ggtitle("Diversity captured between pollen donor types sampling 10 seeds from 25 maternal trees")
+

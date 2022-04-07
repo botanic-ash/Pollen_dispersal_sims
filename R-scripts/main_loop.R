@@ -31,6 +31,7 @@ import_gen2genalex_files(mydir, ".gen$")
 
 num_loci = 20 #number of loci simulated, needed to make a dataframe to save the data
 
+setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
 load("combined_list_params.Rdata") #loading in function parameters defined in defining_function_parameters.R script
 #this Rdata file contains the three list for all_same, all_eligible, and skewed scenarios 
 
@@ -45,15 +46,15 @@ for(i in 1:num_loci){
 }
 
 #creating a container to store the results of sampling and other important data
-# four columns to save the proportion of alleles captured, number of seeds sampled,
-#number of trees sampled, and number of pollen donors (4 cols)
+# five columns to save the proportion of alleles captured, number of seeds sampled,
+#number of trees sampled, and number of pollen donors, and the donor type (5 cols)
 #each row indicates the scenario (465)
 #the third dimension is the simulation replicate (10)
 #saving each of the pollen donor scenarios in different arrays--we can combine them later if we need to! 
   #this is just easier because it's less filtering and more organized
-prop_capt_all_same = array(dim=c(465,5,10))
-prop_capt_all_eligible = array(dim=c(465,5,10))
-prop_capt_skewed = array(dim=c(465,5,10))
+prop_capt_all_same = array(dim=c(465,5,1000))
+prop_capt_all_eligible = array(dim=c(465,5,1000))
+prop_capt_skewed = array(dim=c(465,5,1000))
 
 
 #######################################################################################################
@@ -62,6 +63,7 @@ prop_capt_skewed = array(dim=c(465,5,10))
 #list of genalex files for all simulation replicates--genalex files end in .csv
 #these have the simulated genetic data
 genalex_list = list.files(mydir, ".csv$")
+setwd(mydir)
 
 #Main loop overview:
   #for every simulation replicate, process data to be usable for the function
