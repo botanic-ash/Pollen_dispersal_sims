@@ -60,9 +60,9 @@ for(i in 1:length(num_maternal_trees)) { #loops over the vector of maternal tree
     } else if (j==5) {
       temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.1, 0.05, 0.05)) #if 5 donors, 40%, 40%, 10%, 5%, 5%
     } else if (j>=6&&j<14) {
-      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.5, 0.5, rep((0.1/(j-4)), (j-4)))) #if 6 or more donors (up to 13), then two donate 40%, two donate 5%, and the remaining 10% is split evenly among donors
+      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), j, c(0.4, 0.4, 0.05, 0.05, rep((0.1/(j-4)), (j-4)))) #if 6 or more donors (up to 13), then two donate 40%, two donate 5%, and the remaining 10% is split evenly among donors
     } else if (j>=14) {
-      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), 14, c(0.4, 0.4, 0.5, 0.5, rep((0.1/10), (10)))) #if 14 or more donors, two donate 40%, two donate 5% and the remaining 10% is split evenly among 10 donors--
+      temp = list(num_maternal_trees[i], c(rep(j, (num_maternal_trees[i]))), 14, c(0.4, 0.4, 0.05, 0.05, rep((0.1/10), (10)))) #if 14 or more donors, two donate 40%, two donate 5% and the remaining 10% is split evenly among 10 donors--
         #cap on pollen donors is 14 total (such that the lowest probability to donate pollen is 1%)
     }
     skewed_params[[x]] = temp #saving parameters

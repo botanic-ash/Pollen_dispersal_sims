@@ -135,4 +135,4 @@ colnames(prop_capt_skewed) = c("prop_capt", "total_seeds", "maternal_trees", "nu
 
 #saving results to Rdata file
 setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
-save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt.Rdata")
+save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt_skewed.Rdata")
