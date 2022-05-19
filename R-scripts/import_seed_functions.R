@@ -48,7 +48,7 @@ sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_polle
   num_pops = length(dat_uniq)
   #defining seeds_sampled to store results
   trees = num_trees_to_sample
-  seeds = num_seeds_to_sample[1]#should be x, but x hasn't been defined yet, and we can't define this below
+  seeds = (num_seeds_to_sample[1])
   seeds_sampled = array(dim=c((num_pops*trees*seeds), ((num_loci*2)+1))) #defining the array to store the results of the function in
   seeds_sampled = as.data.frame(seeds_sampled) #making it a data frame because it's easier to work with
   #number rows = total number of seeds sampled (number of populations*number of trees per pop*number of seeds per tree)
@@ -91,4 +91,57 @@ sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_polle
   seeds_sampled
 }
 
+##########################################################################################
+#sample_seed function editied for SKEWED number seeds per tree scenarios 
 
+sample_seed_skewed = function(data, num_trees_to_sample, num_seeds_to_sample, num_pollen_donors, pollen_probability) {
+  #loop over x number of trees collectors are sampling from
+  i=1 #simple counter variable to keep track of the current row (individual) 
+  #defining the number of loci simulated
+  num_loci = ((ncol(data)-2)/2)
+  #defining the number of populations simulated
+  dat_uniq = unique(data$Pop)
+  num_pops = length(dat_uniq)
+  #defining seeds_sampled to store results
+  total_seeds = sum(num_seeds_to_sample)
+  seeds_sampled = array(dim=c((num_pops*total_seeds), ((num_loci*2)+1))) #defining the array to store the results of the function in
+  seeds_sampled = as.data.frame(seeds_sampled) #making it a data frame because it's easier to work with
+  #number rows = total number of seeds sampled (number of populations*number of trees per pop*number of seeds per tree)
+  #number columns = genotype of each seed sampled number of loci*2 (for two alleles) + 1 (to track the population)
+  for(w in 1:num_pops) {
+    #subset data to for the current population group
+    temp_data = data[which(data$Pop==paste("pop", w, sep="")),]
+    total_trees = nrow(temp_data)
+    for(x in 1:num_trees_to_sample) {
+      #choose mother
+      mother <- sample(total_trees, 1) #selecting a row from the dataframe 
+      #choose father(s) randomly -- a vector of rows representing potential pollen donors  
+      fathers <- sample(total_trees, num_pollen_donors)
+      
+      #create y number of seeds that collectors are sampling per tree
+      for(y in 1:(num_seeds_to_sample[x])) {
+        #choose father based on probability vector 
+        if(length(fathers)>1){
+          donor <- sample(fathers, 1, prob = pollen_probability)
+        }else if (length(fathers==1)){
+          donor = fathers
+        }
+        #Loop over number of loci simulated, in order to save the data
+        j=1 #counter variable to keep track of the current column
+        for(z in 1:num_loci) {
+          #then select allele from father randomly, save
+          p_alleles = c(temp_data[donor,paste("locus", z, "a", sep="")], data[donor,paste("locus", z, "b", sep="")])
+          seeds_sampled[i,j] = sample(p_alleles,1)
+          j=j+1
+          #select allele randomly for mother, save
+          m_alleles = c(temp_data[mother,paste("locus", z, "a", sep="")], data[mother,paste("locus", z, "b", sep="")])
+          seeds_sampled[i,j] = sample(m_alleles,1)
+          j=j+1
+        }
+        seeds_sampled[i,j] = paste("pop", w, sep="")
+        i=i+1
+      }
+    }
+  }
+  seeds_sampled
+}

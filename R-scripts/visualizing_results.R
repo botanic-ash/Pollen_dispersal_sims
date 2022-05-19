@@ -6,6 +6,7 @@ load("prop_alleles_capt.Rdata")
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(wesanderson)
 
 #arrays to save averaged results
 prop_capt_all_same_avg = array(dim=c(465,5))
@@ -330,4 +331,238 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   theme_bw() +
   theme(axis.title = element_blank()) +
   ylim(0,1) +
+  theme(legend.position = "none")
+
+###################################################################################
+#SKEWED
+#comparing equivalent scenarios 
+#comparing sampling 25 maternal trees 10 seeds from each tree (row 15)
+same_25_10 = array(dim=c(50,2)) #50 rows for 50 replicates, 2 columns for prop_capt and donor type
+eligible_25_10 = array(dim=c(50,2))
+skewed_25_10 = array(dim=c(50,2))
+
+#looping over simulation replicates to pull equivalent scenarios to comapre among donor modes 
+#50 maternal trees, 100 total seeds
+for(i in 1:50) {
+  same_25_10[i,1] = prop_capt_all_same[1,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same_25_10[i,2] = prop_capt_all_same[1,5,i]
+  
+  eligible_25_10[i,1] = prop_capt_all_eligible[1,1,i]
+  eligible_25_10[i,2] = prop_capt_all_eligible[1,5,i]
+  
+  skewed_25_10[i,1] = prop_capt_skewed[1,1,i]
+  skewed_25_10[i,2] = prop_capt_skewed[1,5,i]
+}
+
+#data processing for plotting
+equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = as.data.frame(equal_comparison)
+colnames(equal_comparison) = c("prop_capt", "donor_type")
+#plotting using a boxplot, includes all simulation replicates to note variation 
+ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group=donor_type, fill=donor_type)) +
+  geom_boxplot() +
+  ylab("Proportion of alleles captured") +
+  xlab("Pollen donation type") +
+  ggtitle("50 maternal trees, 100 seeds total") +
+  scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
+  theme_bw() +
+  theme(axis.title = element_blank()) +
+  ylim(0.2,1) +
+  theme(legend.position = "none")
+
+
+#50 maternal trees, 200 total seeds
+for(i in 1:50) {
+  same_25_10[i,1] = prop_capt_all_same[2,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same_25_10[i,2] = prop_capt_all_same[2,5,i]
+  
+  eligible_25_10[i,1] = prop_capt_all_eligible[2,1,i]
+  eligible_25_10[i,2] = prop_capt_all_eligible[2,5,i]
+  
+  skewed_25_10[i,1] = prop_capt_skewed[2,1,i]
+  skewed_25_10[i,2] = prop_capt_skewed[2,5,i]
+}
+
+#data processing for plotting
+equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = as.data.frame(equal_comparison)
+colnames(equal_comparison) = c("prop_capt", "donor_type")
+#plotting using a boxplot, includes all simulation replicates to note variation 
+ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group=donor_type, fill=donor_type)) +
+  geom_boxplot() +
+  ylab("Proportion of alleles captured") +
+  xlab("Pollen donation type") +
+  ggtitle("50 maternal trees, 200 seeds total") +
+  scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
+  theme_bw() +
+  theme(axis.title = element_blank()) +
+  ylim(0.2,1) +
+  theme(legend.position = "none")
+
+#25 maternal trees, 100 total seeds
+for(i in 1:50) {
+  same_25_10[i,1] = prop_capt_all_same[4,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same_25_10[i,2] = prop_capt_all_same[4,5,i]
+  
+  eligible_25_10[i,1] = prop_capt_all_eligible[4,1,i]
+  eligible_25_10[i,2] = prop_capt_all_eligible[4,5,i]
+  
+  skewed_25_10[i,1] = prop_capt_skewed[4,1,i]
+  skewed_25_10[i,2] = prop_capt_skewed[4,5,i]
+}
+
+#data processing for plotting
+equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = as.data.frame(equal_comparison)
+colnames(equal_comparison) = c("prop_capt", "donor_type")
+#plotting using a boxplot, includes all simulation replicates to note variation 
+ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group=donor_type, fill=donor_type)) +
+  geom_boxplot() +
+  ylab("Proportion of alleles captured") +
+  xlab("Pollen donation type") +
+  ggtitle("25 maternal trees, 100 seeds total") +
+  scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
+  theme_bw() +
+  theme(axis.title = element_blank()) +
+  ylim(0.2,1) +
+  theme(legend.position = "none")
+
+#25 maternal trees 200 seeds
+for(i in 1:50) {
+  same_25_10[i,1] = prop_capt_all_same[6,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same_25_10[i,2] = prop_capt_all_same[6,5,i]
+  
+  eligible_25_10[i,1] = prop_capt_all_eligible[6,1,i]
+  eligible_25_10[i,2] = prop_capt_all_eligible[6,5,i]
+  
+  skewed_25_10[i,1] = prop_capt_skewed[6,1,i]
+  skewed_25_10[i,2] = prop_capt_skewed[6,5,i]
+}
+
+#data processing for plotting
+equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = as.data.frame(equal_comparison)
+colnames(equal_comparison) = c("prop_capt", "donor_type")
+#plotting using a boxplot, includes all simulation replicates to note variation 
+ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group=donor_type, fill=donor_type)) +
+  geom_boxplot() +
+  ylab("Proportion of alleles captured") +
+  xlab("Pollen donation type") +
+  ggtitle("25 maternal trees, 200 seeds total") +
+  scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
+  theme_bw() +
+  theme(axis.title = element_blank()) +
+  ylim(0.2,1) +
+  theme(legend.position = "none")
+
+#10 maternal trees 100 seeds
+for(i in 1:50) {
+  same_25_10[i,1] = prop_capt_all_same[11,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same_25_10[i,2] = prop_capt_all_same[11,5,i]
+  
+  eligible_25_10[i,1] = prop_capt_all_eligible[11,1,i]
+  eligible_25_10[i,2] = prop_capt_all_eligible[11,5,i]
+  
+  skewed_25_10[i,1] = prop_capt_skewed[11,1,i]
+  skewed_25_10[i,2] = prop_capt_skewed[11,5,i]
+}
+
+#data processing for plotting
+equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = as.data.frame(equal_comparison)
+colnames(equal_comparison) = c("prop_capt", "donor_type")
+#plotting using a boxplot, includes all simulation replicates to note variation 
+ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group=donor_type, fill=donor_type)) +
+  geom_boxplot() +
+  ylab("Proportion of alleles captured") +
+  xlab("Pollen donation type") +
+  ggtitle("10 maternal trees, 100 seeds total") +
+  scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
+  theme_bw() +
+  theme(axis.title = element_blank()) +
+  ylim(0.2,1) +
+  theme(legend.position = "none")
+
+#10 maternal trees 200 seeds
+for(i in 1:50) {
+  same_25_10[i,1] = prop_capt_all_same[16,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same_25_10[i,2] = prop_capt_all_same[16,5,i]
+  
+  eligible_25_10[i,1] = prop_capt_all_eligible[16,1,i]
+  eligible_25_10[i,2] = prop_capt_all_eligible[16,5,i]
+  
+  skewed_25_10[i,1] = prop_capt_skewed[16,1,i]
+  skewed_25_10[i,2] = prop_capt_skewed[16,5,i]
+}
+
+#data processing for plotting
+equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = as.data.frame(equal_comparison)
+colnames(equal_comparison) = c("prop_capt", "donor_type")
+#plotting using a boxplot, includes all simulation replicates to note variation 
+ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group=donor_type, fill=donor_type)) +
+  geom_boxplot() +
+  ylab("Proportion of alleles captured") +
+  xlab("Pollen donation type") +
+  ggtitle("10 maternal trees, 200 seeds total") +
+  scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
+  theme_bw() +
+  theme(axis.title = element_blank()) +
+  ylim(0.2,1) +
+  theme(legend.position = "none")
+
+#2 maternal trees 100 seeds
+for(i in 1:50) {
+  same_25_10[i,1] = prop_capt_all_same[66,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same_25_10[i,2] = prop_capt_all_same[66,5,i]
+  
+  eligible_25_10[i,1] = prop_capt_all_eligible[66,1,i]
+  eligible_25_10[i,2] = prop_capt_all_eligible[66,5,i]
+  
+  skewed_25_10[i,1] = prop_capt_skewed[66,1,i]
+  skewed_25_10[i,2] = prop_capt_skewed[66,5,i]
+}
+
+#data processing for plotting
+equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = as.data.frame(equal_comparison)
+colnames(equal_comparison) = c("prop_capt", "donor_type")
+#plotting using a boxplot, includes all simulation replicates to note variation 
+ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group=donor_type, fill=donor_type)) +
+  geom_boxplot() +
+  ylab("Proportion of alleles captured") +
+  xlab("Pollen donation type") +
+  ggtitle("2 maternal trees, 100 seeds total") +
+  scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
+  theme_bw() +
+  theme(axis.title = element_blank()) +
+  ylim(0.2,1) +
+  theme(legend.position = "none")
+
+#2 maternal trees 200 seeds
+for(i in 1:50) {
+  same_25_10[i,1] = prop_capt_all_same[86,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same_25_10[i,2] = prop_capt_all_same[86,5,i]
+  
+  eligible_25_10[i,1] = prop_capt_all_eligible[86,1,i]
+  eligible_25_10[i,2] = prop_capt_all_eligible[86,5,i]
+  
+  skewed_25_10[i,1] = prop_capt_skewed[86,1,i]
+  skewed_25_10[i,2] = prop_capt_skewed[86,5,i]
+}
+
+#data processing for plotting
+equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = as.data.frame(equal_comparison)
+colnames(equal_comparison) = c("prop_capt", "donor_type")
+#plotting using a boxplot, includes all simulation replicates to note variation 
+ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group=donor_type, fill=donor_type)) +
+  geom_boxplot() +
+  ylab("Proportion of alleles captured") +
+  xlab("Pollen donation type") +
+  ggtitle("2 maternal trees, 200 seeds total") +
+  scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
+  theme_bw() +
+  theme(axis.title = element_blank()) +
+  ylim(0.2,1) +
   theme(legend.position = "none")
