@@ -32,6 +32,7 @@ import_gen2genalex_files(mydir, ".gen$")
 num_loci = 20 #number of loci simulated, needed to make a dataframe to save the data
 
 setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
+###MAKE SURE TO LOAD IN THE CORRECT DATA
 load("combined_list_params_skewed.Rdata") #loading in function parameters defined in defining_function_parameters.R script
 #this Rdata file contains the three list for all_same, all_eligible, and skewed scenarios 
 
@@ -92,7 +93,7 @@ for(i in 1:length(genalex_list)) {
     captured = sum(sapply(temp[1:40], n_distinct)) #counting the number of distinct alleles in temp--the function return, which does the sampling
     total = sum(sapply(data[3:42], n_distinct)) #counting number of distinct alleles in data, which contains all the alleles in the population
     prop_capt_all_same[x,1,i] = (captured/total)#proportion of alleles captured = captured/total, save these results
-    prop_capt_all_same[x,2,i] = ((all_same_params[[x]][[1]])*(all_same_params[[x]][[2]][[1]]))#total seeds sampled --if possible, change all_same_params[[x]][[2]][[1]] hard coding 
+    prop_capt_all_same[x,2,i] = sum(all_same_params_skewed[[x]][[2]])#total seeds sampled --if possible, change all_same_params[[x]][[2]][[1]] hard coding 
     prop_capt_all_same[x,3,i] = (all_same_params[[x]][[1]]) #number of trees sampled 
     prop_capt_all_same[x,4,i] = (all_same_params[[x]][[3]]) #number of pollen donors
     prop_capt_all_same[x,5,i] = "all_same"
@@ -107,7 +108,7 @@ for(i in 1:length(genalex_list)) {
     captured = sum(sapply(temp[1:40], n_distinct))#counting the number of distinct alleles in temp--the function return, which does the sampling
     total = sum(sapply(data[3:42], n_distinct))#counting number of distinct alleles in data, which contains all the alleles in the population
     prop_capt_all_eligible[x,1,i] = (captured/total) #proportion of alleles captured= captured/total
-    prop_capt_all_eligible[x,2,i] = ((all_eligible_params[[x]][[1]])*(all_eligible_params[[x]][[2]][[1]]))#total seeds sampled
+    prop_capt_all_eligible[x,2,i] = sum(all_same_params_skewed[[x]][[2]])#total seeds sampled
     prop_capt_all_eligible[x,3,i] = (all_eligible_params[[x]][[1]]) #number of trees sampled 
     prop_capt_all_eligible[x,4,i] = (all_eligible_params[[x]][[3]]) #number of pollen donors
     prop_capt_all_eligible[x,5,i] = "all_eligible"
@@ -121,7 +122,7 @@ for(i in 1:length(genalex_list)) {
     captured = sum(sapply(temp[1:40], n_distinct))#counting the number of distinct alleles in temp--the function return, which does the sampling
     total = sum(sapply(data[3:42], n_distinct)) #counting number of distinct alleles in data, which contains all the alleles in the population
     prop_capt_skewed[x,1,i] = (captured/total)#proportion of alleles captured = captured/ total
-    prop_capt_skewed[x,2,i] = ((skewed_params[[x]][[1]])*(skewed_params[[x]][[2]][[1]]))#total seeds sampled
+    prop_capt_skewed[x,2,i] = sum(all_same_params_skewed[[x]][[2]])#total seeds sampled
     prop_capt_skewed[x,3,i] = (skewed_params[[x]][[1]]) #number of trees sampled 
     prop_capt_skewed[x,4,i] = (skewed_params[[x]][[3]]) #number of pollen donors
     prop_capt_skewed[x,5,i] = "skewed"
@@ -133,86 +134,10 @@ colnames(prop_capt_all_same) = c("prop_capt", "total_seeds", "maternal_trees", "
 colnames(prop_capt_all_eligible) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
 colnames(prop_capt_skewed) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
 
-#saving results to Rdata file
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
-save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt.Rdata")
+#saving EQUAL results to Rdata file
+#setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
+#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt.Rdata")
 
-#######################################################################################################
-#Main processing loop - SKEWED
-
-#list of genalex files for all simulation replicates--genalex files end in .csv
-#these have the simulated genetic data
-genalex_list = list.files(mydir, ".csv$")
-setwd(mydir)
-
-#Main loop overview:
-#for every simulation replicate, process data to be usable for the function
-#then, we have three separate loops, that loop over the parameters created in defining_function_parameters.R
-#there are three separate loops for the three pollen donor scnearios (skewed, all eligble, and all same)
-#calculate proportion of alleles captured by 
-#finally, save results (prop. alleles capt, number seeds sampled, number trees sampled, and number pollen donors)
-for(i in 1:length(genalex_list)) {
-  #first import and process the data
-  #import genalex files as dataframe
-  data = read.csv(genalex_list[[i]], header=FALSE)
-  #cut off first 2 rows in dataframe -- this is the population data, which is not required for our purposes
-  data = data[-2,]
-  data = data[-1,]
-  #giving the dataframe columns new names
-  names(data) = c("Ind", "Pop", loci_names)
-  data = data[-1,] #removing the first row -- repeat of now column headers
-  
-  #All same pollen scenarios
-  #for each element in scenario list--for 'all same' sampling (defined in defining_function_parameters.R file)
-  for(x in 1:length(all_same_params_skewed)) {
-    #call the function using that scenario and save the function return in temp
-    temp = sample_seed_skewed(data, all_same_params_skewed[[x]][[1]], all_same_params_skewed[[x]][[2]], all_same_params_skewed[[x]][[3]], all_same_params_skewed[[x]][[4]])
-    #calculating proportion of alleles captured 
-    #n_distinct counts all distinct values in a column -- we want to sum this across multiple columns, so that's where sum and sapply come in
-    captured = sum(sapply(temp[1:40], n_distinct)) #counting the number of distinct alleles in temp--the function return, which does the sampling
-    total = sum(sapply(data[3:42], n_distinct)) #counting number of distinct alleles in data, which contains all the alleles in the population
-    prop_capt_all_same[x,1,i] = (captured/total)#proportion of alleles captured = captured/total, save these results
-    prop_capt_all_same[x,2,i] = sum(all_same_params_skewed[[x]][[2]])#total seeds sampled --if possible, change all_same_params[[x]][[2]][[1]] hard coding 
-    prop_capt_all_same[x,3,i] = (all_same_params_skewed[[x]][[1]]) #number of trees sampled 
-    prop_capt_all_same[x,4,i] = (all_same_params_skewed[[x]][[3]]) #number of pollen donors
-    prop_capt_all_same[x,5,i] = "all_same"
-  }
-  
-  #'all eligible' sampling
-  for(x in 1:length(all_eligible_params_skewed)) {
-    #call the function using that scenario and save the function return in temp
-    temp = sample_seed_skewed(data, all_eligible_params_skewed[[x]][[1]], all_eligible_params_skewed[[x]][[2]], all_eligible_params_skewed[[x]][[3]], all_eligible_params_skewed[[x]][[4]])
-    #calculating proportion of alleles captured 
-    #n_distinct counts all distinct values in a column -- we want to sum this across multiple columns, so that's where sum and sapply come in
-    captured = sum(sapply(temp[1:40], n_distinct))#counting the number of distinct alleles in temp--the function return, which does the sampling
-    total = sum(sapply(data[3:42], n_distinct))#counting number of distinct alleles in data, which contains all the alleles in the population
-    prop_capt_all_eligible[x,1,i] = (captured/total) #proportion of alleles captured= captured/total
-    prop_capt_all_eligible[x,2,i] = sum(all_eligible_params_skewed[[x]][[2]])#total seeds sampled
-    prop_capt_all_eligible[x,3,i] = (all_eligible_params_skewed[[x]][[1]]) #number of trees sampled 
-    prop_capt_all_eligible[x,4,i] = (all_eligible_params_skewed[[x]][[3]]) #number of pollen donors
-    prop_capt_all_eligible[x,5,i] = "all_eligible"
-  }
-  
-  #skewed sampling
-  for(x in 1:length(skewed_params_skewed)) {
-    temp = sample_seed_skewed(data, skewed_params_skewed[[x]][[1]], skewed_params_skewed[[x]][[2]], skewed_params_skewed[[x]][[3]], skewed_params_skewed[[x]][[4]])
-    #calculating proportion of alleles captured 
-    #n_distinct counts all distinct values in a column -- we want to sum this across multiple columns, so that's where sum and sapply come in
-    captured = sum(sapply(temp[1:40], n_distinct))#counting the number of distinct alleles in temp--the function return, which does the sampling
-    total = sum(sapply(data[3:42], n_distinct)) #counting number of distinct alleles in data, which contains all the alleles in the population
-    prop_capt_skewed[x,1,i] = (captured/total)#proportion of alleles captured = captured/ total
-    prop_capt_skewed[x,2,i] = sum(skewed_params_skewed[[x]][[2]])#total seeds sampled
-    prop_capt_skewed[x,3,i] = (skewed_params_skewed[[x]][[1]]) #number of trees sampled 
-    prop_capt_skewed[x,4,i] = (skewed_params_skewed[[x]][[3]]) #number of pollen donors
-    prop_capt_skewed[x,5,i] = "skewed"
-  }
-  
-}
-
-colnames(prop_capt_all_same) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
-colnames(prop_capt_all_eligible) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
-colnames(prop_capt_skewed) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
-
-#saving results to Rdata file
+#saving SKEWED results to Rdata file
 setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
 save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt_skewed.Rdata")
