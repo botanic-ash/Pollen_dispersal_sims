@@ -1,3 +1,4 @@
+#Code written by Kaylee Rosenberger#Code written by Kaylee Rosenberger
 ###
 #This script fills a list containing sets of function parameters (scenarios for 'simulation')
 #The loop goes through each number of maternal trees (50, 25, 10, 5, 2, 1) sampling a different

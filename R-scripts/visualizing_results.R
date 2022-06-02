@@ -1,3 +1,4 @@
+#Code written by Kaylee Rosenberger
 #load in results from main_loop.R
 setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
 ###MAKE SURE TO LOAD IN THE CORRECT DATA

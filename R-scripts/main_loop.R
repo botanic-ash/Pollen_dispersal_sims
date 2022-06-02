@@ -1,3 +1,4 @@
+#Code written by Kaylee Rosenberger
 #Main loop
 #This script has the main processing loop, which runs the functions defined in the previous script
 #assinging mating, pollen dispersal, and seed collecting in the population
