@@ -130,9 +130,9 @@ ggplot(data=filtered, aes(x=as.numeric(maternal_trees), y=as.numeric(prop_capt),
 load("prop_alleles_capt_new.Rdata")
 
 #defining arrays to store the results in for easy plotting 
-same_25_10 = array(dim=c(50,2)) #50 rows for 50 replicates, 2 columns for prop_capt and donor type
-eligible_25_10 = array(dim=c(50,2))
-skewed_25_10 = array(dim=c(50,2))
+same = array(dim=c(50,2)) #50 rows for 50 replicates, 2 columns for prop_capt and donor type
+eligible = array(dim=c(50,2))
+skewed = array(dim=c(50,2))
 
 #################
 #comparing sampling 10 seeds from 50 maternal trees (500 seeds total)
@@ -140,18 +140,18 @@ skewed_25_10 = array(dim=c(50,2))
 #We pull directly from the results array by hard coding (which should be avoided, but is in progress)
 for(i in 1:50) {
   
-  same_25_10[i,1] = prop_capt_all_same[10,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[10,5,i]
+  same[i,1] = prop_capt_all_same[10,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[10,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[10,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[10,5,i]
+  eligible[i,1] = prop_capt_all_eligible[10,1,i]
+  eligible[i,2] = prop_capt_all_eligible[10,5,i]
     
-  skewed_25_10[i,1] = prop_capt_skewed[10,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[10,5,i]
+  skewed[i,1] = prop_capt_skewed[10,1,i]
+  skewed[i,2] = prop_capt_skewed[10,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -163,7 +163,7 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
   theme_bw() +
   theme(axis.title = element_blank()) +
-  ylim(.7,1) +
+  ylim(.2,1) +
   theme(legend.position = "none")
 
 ###########################
@@ -171,18 +171,18 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
 #looping over simulation replicates to pull equivalent scenarios to comapre among donor modes 
 #20 seeds from 25 maternal trees (500)
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[30,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[30,5,i]
+  same[i,1] = prop_capt_all_same[30,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[30,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[30,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[30,5,i]
+  eligible[i,1] = prop_capt_all_eligible[30,1,i]
+  eligible[i,2] = prop_capt_all_eligible[30,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[30,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[30,5,i]
+  skewed[i,1] = prop_capt_skewed[30,1,i]
+  skewed[i,2] = prop_capt_skewed[30,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -194,25 +194,25 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
   theme_bw() +
   theme(axis.title = element_blank()) +
-  ylim(0.7,1) +
+  ylim(0.2,1) +
   theme(legend.position = "none")
 
 ###########################
 
 #50 seeds from 10 maternal trees (500)
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[80,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[80,5,i]
+  same[i,1] = prop_capt_all_same[80,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[80,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[80,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[80,5,i]
+  eligible[i,1] = prop_capt_all_eligible[80,1,i]
+  eligible[i,2] = prop_capt_all_eligible[80,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[80,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[80,5,i]
+  skewed[i,1] = prop_capt_skewed[80,1,i]
+  skewed[i,2] = prop_capt_skewed[80,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -224,25 +224,25 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
   theme_bw() +
   theme(axis.title = element_blank()) +
-  ylim(0,1) +
+  ylim(0.2,1) +
   theme(legend.position = "none")
 
 #######################
 
-#250 seeds 2 maternal tree
+#250 seeds 2 maternal tree (500)
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[430,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[430,5,i]
+  same[i,1] = prop_capt_all_same[430,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[430,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[430,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[430,5,i]
+  eligible[i,1] = prop_capt_all_eligible[430,1,i]
+  eligible[i,2] = prop_capt_all_eligible[430,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[430,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[430,5,i]
+  skewed[i,1] = prop_capt_skewed[430,1,i]
+  skewed[i,2] = prop_capt_skewed[430,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -254,25 +254,25 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
   theme_bw()+
   theme(axis.title = element_blank()) +
-  ylim(0,1) +
+  ylim(0.2,1) +
   theme(legend.position = "none")
 
 #########################
 
-#50 maternal trees 2 seeds per
+#50 maternal trees 2 seeds per (100)
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[2,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[2,5,i]
+  same[i,1] = prop_capt_all_same[2,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[2,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[2,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[2,5,i]
+  eligible[i,1] = prop_capt_all_eligible[2,1,i]
+  eligible[i,2] = prop_capt_all_eligible[2,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[2,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[2,5,i]
+  skewed[i,1] = prop_capt_skewed[2,1,i]
+  skewed[i,2] = prop_capt_skewed[2,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -284,25 +284,25 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
   theme_bw() +
   theme(axis.title = element_blank()) +
-  ylim(0.7,1) +
+  ylim(0.2,1) +
   theme(legend.position = "none")
 
 ######################
 
-#25 maternal trees 4 seeds per
+#25 maternal trees 4 seeds per (100)
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[14,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[14,5,i]
+  same[i,1] = prop_capt_all_same[14,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[14,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[14,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[14,5,i]
+  eligible[i,1] = prop_capt_all_eligible[14,1,i]
+  eligible[i,2] = prop_capt_all_eligible[14,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[14,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[14,5,i]
+  skewed[i,1] = prop_capt_skewed[14,1,i]
+  skewed[i,2] = prop_capt_skewed[14,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -314,25 +314,25 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
   theme_bw() +
   theme(axis.title = element_blank()) +
-  ylim(0.7,1) +
+  ylim(0.2,1) +
   theme(legend.position = "none")
 
 ###########################
 
 #10 maternal trees 10 seeds per
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[40,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[40,5,i]
+  same[i,1] = prop_capt_all_same[40,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[40,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[40,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[40,5,i]
+  eligible[i,1] = prop_capt_all_eligible[40,1,i]
+  eligible[i,2] = prop_capt_all_eligible[40,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[40,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[40,5,i]
+  skewed[i,1] = prop_capt_skewed[40,1,i]
+  skewed[i,2] = prop_capt_skewed[40,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -344,25 +344,25 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
   theme_bw()  +
   theme(axis.title = element_blank()) +
-  ylim(0.5,1) +
+  ylim(0.2,1) +
   theme(legend.position = "none")
 
 ######################
 
 #2 maternal trees 50 seeds per
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[230,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[230,5,i]
+  same[i,1] = prop_capt_all_same[230,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[230,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[230,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[230,5,i]
+  eligible[i,1] = prop_capt_all_eligible[230,1,i]
+  eligible[i,2] = prop_capt_all_eligible[230,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[230,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[230,5,i]
+  skewed[i,1] = prop_capt_skewed[230,1,i]
+  skewed[i,2] = prop_capt_skewed[230,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -389,27 +389,27 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
 load("prop_alleles_capt_skewed_new.Rdata")
 
 #defining the results arrays to store filtered data
-same_25_10 = array(dim=c(50,2)) #50 rows for 50 replicates, 2 columns for prop_capt and donor type
-eligible_25_10 = array(dim=c(50,2))
-skewed_25_10 = array(dim=c(50,2))
+same = array(dim=c(50,2)) #50 rows for 50 replicates, 2 columns for prop_capt and donor type
+eligible = array(dim=c(50,2))
+skewed = array(dim=c(50,2))
 
 #################### 
 
 #looping over simulation replicates to pull equivalent scenarios to comapre among donor modes 
 #50 maternal trees, 500 total seeds
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[5,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[5,5,i]
+  same[i,1] = prop_capt_all_same[5,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[5,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[5,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[5,5,i]
+  eligible[i,1] = prop_capt_all_eligible[5,1,i]
+  eligible[i,2] = prop_capt_all_eligible[5,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[5,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[5,5,i]
+  skewed[i,1] = prop_capt_skewed[5,1,i]
+  skewed[i,2] = prop_capt_skewed[5,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -421,25 +421,25 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
   theme_bw() +
   theme(axis.title = element_blank()) +
-  ylim(0.7,1) +
+  ylim(0.2,1) +
   theme(legend.position = "none")
 
 #####################
 
 #25 maternal trees, 500 total seeds
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[15,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[15,5,i]
+  same[i,1] = prop_capt_all_same[15,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[15,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[15,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[15,5,i]
+  eligible[i,1] = prop_capt_all_eligible[15,1,i]
+  eligible[i,2] = prop_capt_all_eligible[15,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[15,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[15,5,i]
+  skewed[i,1] = prop_capt_skewed[15,1,i]
+  skewed[i,2] = prop_capt_skewed[15,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -458,18 +458,18 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
 
 #10 maternal trees, 500 total seeds
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[40,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[40,5,i]
+  same[i,1] = prop_capt_all_same[40,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[40,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[40,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[40,5,i]
+  eligible[i,1] = prop_capt_all_eligible[40,1,i]
+  eligible[i,2] = prop_capt_all_eligible[40,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[40,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[40,5,i]
+  skewed[i,1] = prop_capt_skewed[40,1,i]
+  skewed[i,2] = prop_capt_skewed[40,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -488,18 +488,18 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
 
 #2 maternal trees 500 seeds
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[215,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[215,5,i]
+  same[i,1] = prop_capt_all_same[215,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[215,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[215,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[215,5,i]
+  eligible[i,1] = prop_capt_all_eligible[215,1,i]
+  eligible[i,2] = prop_capt_all_eligible[215,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[215,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[215,5,i]
+  skewed[i,1] = prop_capt_skewed[215,1,i]
+  skewed[i,2] = prop_capt_skewed[215,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -518,18 +518,18 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
 
 #50 maternal trees, 100 seeds
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[1,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[1,5,i]
+  same[i,1] = prop_capt_all_same[1,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[1,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[1,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[1,5,i]
+  eligible[i,1] = prop_capt_all_eligible[1,1,i]
+  eligible[i,2] = prop_capt_all_eligible[1,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[1,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[1,5,i]
+  skewed[i,1] = prop_capt_skewed[1,1,i]
+  skewed[i,2] = prop_capt_skewed[1,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -548,18 +548,18 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
 
 #25 maternal trees 100 seeds
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[7,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[7,5,i]
+  same[i,1] = prop_capt_all_same[7,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[7,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[7,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[7,5,i]
+  eligible[i,1] = prop_capt_all_eligible[7,1,i]
+  eligible[i,2] = prop_capt_all_eligible[7,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[7,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[7,5,i]
+  skewed[i,1] = prop_capt_skewed[7,1,i]
+  skewed[i,2] = prop_capt_skewed[7,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -578,18 +578,18 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
 
 #10 maternal trees 100 seeds
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[20,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[20,5,i]
+  same[i,1] = prop_capt_all_same[20,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[20,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[20,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[20,5,i]
+  eligible[i,1] = prop_capt_all_eligible[20,1,i]
+  eligible[i,2] = prop_capt_all_eligible[20,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[20,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[20,5,i]
+  skewed[i,1] = prop_capt_skewed[20,1,i]
+  skewed[i,2] = prop_capt_skewed[20,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -608,18 +608,18 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
 
 #2 maternal trees 100 seeds
 for(i in 1:50) {
-  same_25_10[i,1] = prop_capt_all_same[135,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_25_10[i,2] = prop_capt_all_same[135,5,i]
+  same[i,1] = prop_capt_all_same[135,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same[i,2] = prop_capt_all_same[135,5,i]
   
-  eligible_25_10[i,1] = prop_capt_all_eligible[135,1,i]
-  eligible_25_10[i,2] = prop_capt_all_eligible[135,5,i]
+  eligible[i,1] = prop_capt_all_eligible[135,1,i]
+  eligible[i,2] = prop_capt_all_eligible[135,5,i]
   
-  skewed_25_10[i,1] = prop_capt_skewed[135,1,i]
-  skewed_25_10[i,2] = prop_capt_skewed[135,5,i]
+  skewed[i,1] = prop_capt_skewed[135,1,i]
+  skewed[i,2] = prop_capt_skewed[135,5,i]
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_25_10, eligible_25_10, skewed_25_10)
+equal_comparison = rbind(same, eligible, skewed)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
