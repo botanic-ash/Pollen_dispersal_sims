@@ -12,6 +12,11 @@ library(poppr)
 library(tidyr)
 library(dplyr)
 
+setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
+###MAKE SURE TO LOAD IN THE CORRECT DATA
+load("combined_list_params_skewed.Rdata") #loading in function parameters defined in defining_function_parameters.R script
+#this Rdata file contains the three list for all_same, all_eligible, and skewed scenarios 
+
 #including R-script containing functions used for import, conversions, and sampling
 source("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts/import_seed_functions.R")
 #including edited arp2gen function 
@@ -32,11 +37,6 @@ import_gen2genalex_files(mydir, ".gen$")
 
 num_loci = 20 #number of loci simulated, needed to make a dataframe to save the data
 
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
-###MAKE SURE TO LOAD IN THE CORRECT DATA
-load("combined_list_params_skewed.Rdata") #loading in function parameters defined in defining_function_parameters.R script
-#this Rdata file contains the three list for all_same, all_eligible, and skewed scenarios 
-
 #defining array to store seeds that collectors have 'sampled'
 #first we need to create column names depending on how many loci are present in simulations
 #then, define the matrix, convert to dataframe, and rename the columns to label the data
@@ -51,16 +51,25 @@ for(i in 1:num_loci){
 # five columns to save the proportion of alleles captured, number of seeds sampled,
 #number of trees sampled, and number of pollen donors, and the donor type (5 cols)
 #each row indicates the scenario (465)
-#the third dimension is the simulation replicate (10)
+#the third dimension is the simulation replicate (50)
 #saving each of the pollen donor scenarios in different arrays--we can combine them later if we need to! 
   #this is just easier because it's less filtering and more organized
+#Idealized scenarios
 prop_capt_all_same = array(dim=c(215,5,50))
 prop_capt_all_eligible = array(dim=c(215,5,50))
 prop_capt_skewed = array(dim=c(215,5,50))
 
+#realistic scenarios--we have different numbers of scenarios for each
+#prop_capt_all_same = array(dim=c(215,5,50))
+#prop_capt_all_eligible = array(dim=c(215,5,50))
+#prop_capt_skewed = array(dim=c(215,5,50))
+
 
 #######################################################################################################
 #Main processing loop
+#goes through each simulation replicate, calling the function with the parameters defined in the 
+#defining_function_parameters.R script.
+#results are saved in a 3D array 
 
 #list of genalex files for all simulation replicates--genalex files end in .csv
 #these have the simulated genetic data
@@ -91,9 +100,28 @@ for(i in 1:length(genalex_list)) {
     #call the function using that scenario and save the function return in temp
     temp = sample_seed(data, all_same_params[[x]][[1]], all_same_params[[x]][[2]], all_same_params[[x]][[3]], all_same_params[[x]][[4]])
     #calculating proportion of alleles captured 
-    #n_distinct counts all distinct values in a column -- we want to sum this across multiple columns, so that's where sum and sapply come in
-    captured = sum(sapply(temp[1:40], n_distinct)) #counting the number of distinct alleles in temp--the function return, which does the sampling
-    total = sum(sapply(data[3:42], n_distinct)) #counting number of distinct alleles in data, which contains all the alleles in the population
+    #Counting the total number of alleles present in the parental dataset (total)
+    total = 0 #sum to keep track of total alleles 
+    k=3 #starting from 3rd column
+    for(z in 1:num_loci) {
+      temp1 = unique(data[,k]) #getting unique values in column k for locus i (locusiA)
+      k = k+1 #increment k to move to next column for locus i
+      temp2 = unique(data[,k]) #getting unique values in column k for locus i (locusiB)
+      temp3 = c(temp1,temp2) #concatenating both vectors into one
+      total = total + n_distinct(temp3) #getting the number of distinct values for locus 1 to count alleles 
+      k = k+1 #increment k for next loop iteration
+    }
+    #counting the number of alleles in the seeds sampled dataset (captured)
+    captured = 0
+    k=1
+    for(z in 1:num_loci) {
+      temp1 = unique(temp[,k]) #getting unique values in column k for locus i (locusiA)
+      k = k+1 #increment k to move to next column for locus i
+      temp2 = unique(temp[,k]) #getting unique values in column k for locus i (locusiB)
+      temp3 = c(temp1,temp2) #concatenating both vectors into one
+      captured = captured + n_distinct(temp3) #getting the number of distinct values for locus 1 to count alleles 
+      k = k+1 #increment k for next loop iteration
+    }
     prop_capt_all_same[x,1,i] = (captured/total)#proportion of alleles captured = captured/total, save these results
     prop_capt_all_same[x,2,i] = sum(all_same_params[[x]][[2]])#total seeds sampled --if possible, change all_same_params[[x]][[2]][[1]] hard coding 
     prop_capt_all_same[x,3,i] = (all_same_params[[x]][[1]]) #number of trees sampled 
@@ -106,9 +134,29 @@ for(i in 1:length(genalex_list)) {
     #call the function using that scenario and save the function return in temp
     temp = sample_seed(data, all_eligible_params[[x]][[1]], all_eligible_params[[x]][[2]], all_eligible_params[[x]][[3]], all_eligible_params[[x]][[4]])
     #calculating proportion of alleles captured 
-    #n_distinct counts all distinct values in a column -- we want to sum this across multiple columns, so that's where sum and sapply come in
-    captured = sum(sapply(temp[1:40], n_distinct))#counting the number of distinct alleles in temp--the function return, which does the sampling
-    total = sum(sapply(data[3:42], n_distinct))#counting number of distinct alleles in data, which contains all the alleles in the population
+    #calculating proportion of alleles captured 
+    #Counting the total number of alleles present in the parental dataset (total)
+    total = 0 #sum to keep track of total alleles 
+    k=3 #starting from 3rd column
+    for(z in 1:num_loci) {
+      temp1 = unique(data[,k]) #getting unique values in column k for locus i (locusiA)
+      k = k+1 #increment k to move to next column for locus i
+      temp2 = unique(data[,k]) #getting unique values in column k for locus i (locusiB)
+      temp3 = c(temp1,temp2) #concatenating both vectors into one
+      total = total + n_distinct(temp3) #getting the number of distinct values for locus 1 to count alleles 
+      k = k+1 #increment k for next loop iteration
+    }
+    #counting the number of alleles in the seeds sampled dataset (captured)
+    captured = 0
+    k=1
+    for(z in 1:num_loci) {
+      temp1 = unique(temp[,k]) #getting unique values in column k for locus i (locusiA)
+      k = k+1 #increment k to move to next column for locus i
+      temp2 = unique(temp[,k]) #getting unique values in column k for locus i (locusiB)
+      temp3 = c(temp1,temp2) #concatenating both vectors into one
+      captured = captured + n_distinct(temp3) #getting the number of distinct values for locus 1 to count alleles 
+      k = k+1 #increment k for next loop iteration
+    }
     prop_capt_all_eligible[x,1,i] = (captured/total) #proportion of alleles captured= captured/total
     prop_capt_all_eligible[x,2,i] = sum(all_eligible_params[[x]][[2]])#total seeds sampled
     prop_capt_all_eligible[x,3,i] = (all_eligible_params[[x]][[1]]) #number of trees sampled 
@@ -120,9 +168,29 @@ for(i in 1:length(genalex_list)) {
   for(x in 1:length(skewed_params)) {
     temp = sample_seed(data, skewed_params[[x]][[1]], skewed_params[[x]][[2]], skewed_params[[x]][[3]], skewed_params[[x]][[4]])
     #calculating proportion of alleles captured 
-    #n_distinct counts all distinct values in a column -- we want to sum this across multiple columns, so that's where sum and sapply come in
-    captured = sum(sapply(temp[1:40], n_distinct))#counting the number of distinct alleles in temp--the function return, which does the sampling
-    total = sum(sapply(data[3:42], n_distinct)) #counting number of distinct alleles in data, which contains all the alleles in the population
+    #calculating proportion of alleles captured 
+    #Counting the total number of alleles present in the parental dataset (total)
+    total = 0 #sum to keep track of total alleles 
+    k=3 #starting from 3rd column
+    for(z in 1:num_loci) {
+      temp1 = unique(data[,k]) #getting unique values in column k for locus i (locusiA)
+      k = k+1 #increment k to move to next column for locus i
+      temp2 = unique(data[,k]) #getting unique values in column k for locus i (locusiB)
+      temp3 = c(temp1,temp2) #concatenating both vectors into one
+      total = total + n_distinct(temp3) #getting the number of distinct values for locus 1 to count alleles 
+      k = k+1 #increment k for next loop iteration
+    }
+    #counting the number of alleles in the seeds sampled dataset (captured)
+    captured = 0
+    k=1
+    for(z in 1:num_loci) {
+      temp1 = unique(temp[,k]) #getting unique values in column k for locus i (locusiA)
+      k = k+1 #increment k to move to next column for locus i
+      temp2 = unique(temp[,k]) #getting unique values in column k for locus i (locusiB)
+      temp3 = c(temp1,temp2) #concatenating both vectors into one
+      captured = captured + n_distinct(temp3) #getting the number of distinct values for locus 1 to count alleles 
+      k = k+1 #increment k for next loop iteration
+    }
     prop_capt_skewed[x,1,i] = (captured/total)#proportion of alleles captured = captured/ total
     prop_capt_skewed[x,2,i] = sum(skewed_params[[x]][[2]])#total seeds sampled
     prop_capt_skewed[x,3,i] = (skewed_params[[x]][[1]]) #number of trees sampled 
