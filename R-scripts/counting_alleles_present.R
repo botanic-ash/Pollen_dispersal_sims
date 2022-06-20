@@ -1,25 +1,20 @@
 #Counting the total number of alleles present in the parental dataset (total)
+#while ignoring super rare alleles (frequency less than 2 by locus)
 num_loci=20#number of loci simulated
 total = 0 #sum to keep track of total alleles 
-k=3 #starting from 3rd column
+captured = 0 #sum to keep track of alleles captured by sampling
+k=3
+j=1
 for(i in 1:num_loci) {
-  temp1 = unique(data[,k]) #getting unique values in column k for locus i (locusiA)
-  k = k+1 #increment k to move to next column for locus i
-  temp2 = unique(data[,k]) #getting unique values in column k for locus i (locusiB)
-  temp3 = c(temp1,temp2) #concatenating both vectors into one
-  total = total + n_distinct(temp3) #getting the number of distinct values for locus 1 to count alleles 
-  k = k+1 #increment k for next loop iteration
-}
-
-
-#counting the number of loci in the seeds sampled dataset (captured)
-captured = 0
-k=1
-for(i in 1:num_loci) {
-  temp1 = unique(temp[,k]) #getting unique values in column k for locus i (locusiA)
-  k = k+1 #increment k to move to next column for locus i
-  temp2 = unique(temp[,k]) #getting unique values in column k for locus i (locusiB)
-  temp3 = c(temp1,temp2) #concatenating both vectors into one
-  captured = captured + n_distinct(temp3) #getting the number of distinct values for locus 1 to count alleles 
-  k = k+1 #increment k for next loop iteration
+  parental_allele_list = table(c(as.matrix(data[,k:k+1]))) #getting alleles and their frequencies for locus i in parental dataframe
+  parental_allele_list=parental_allele_list[parental_allele_list>2] #subsetting parental data to only include alleles with frequency greater than 2
+  total_names = names(parental_allele_list)
+  total = total + n_distinct(names(parental_allele_list)) #getting the number of distinct values for locus 1 to count alleles 
+  
+  seed_allele_list = table(c(as.matrix(temp[,j:j+1]))) #getting unique values for locus i in seed dataframe 
+  captured_names = names(seed_allele_list)#getting the names of the alleles captured from sampling
+  captured = captured + n_distinct(intersect(captured_names,total_names))#making sure none of the super rare alleles excluded from parental dataset are included here
+  
+  k = k+2 #increment k for next loop iteration
+  j = j+2
 }
