@@ -11,7 +11,7 @@ j=1 #counter variable to column (locus) of seed dataset
 
 for(i in 1:num_loci) {
   parental_allele_list = table(c(as.matrix(data[,k:k+1]))) #getting alleles and their frequencies for locus i in parental dataframe
-  parental_allele_list=parental_allele_list[parental_allele_list>3] #subsetting parental data to only include alleles with frequency greater than 2
+  parental_allele_list=parental_allele_list[parental_allele_list>3] #subsetting parental data to only include alleles with frequency greater than 3
   total_names = names(parental_allele_list)
   total = total + n_distinct(names(parental_allele_list)) #getting the number of distinct values for locus 1 to count alleles 
   
