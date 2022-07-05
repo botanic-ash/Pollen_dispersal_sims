@@ -1,18 +1,33 @@
 //Parameters to model more complex population
-1 samples to simulate
+4 samples to simulate
 //Population effective sizes (number of genes 2*diploids)
 5000
-//Sample sizes (number of genes 2*diploids)
 5000
+5000
+5000
+//Sample sizes (number of genes 2*diploids)
+100
+100
+100
+100
 //Growth rates	: negative growth implies population expansion
+0
+0
+0
 0
 //Number of migration matrices : 0 implies no migration between demes
 1
 //Migration rates matrix 0
-0
+0 0 0 0
+0 0 0 0
+0 0 0 0
+0 0 0 0
 //historical event: time, source, sink, migrants, new deme size, new growth rate, migration matrix index
-1 historical events
+4 historical events
 10000 0 0 1 1.00 0 0 
+10000 1 0 1 1.00 0 0
+10000 2 0 1 1.00 0 0
+10000 3 0 1 1.00 0 0
 //Number of independent loci [chromosome] (Number of sequences of 300 bp per gamete)
 20 0
 // Chromosome structure 1 begins with number of loci

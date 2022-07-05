@@ -17,7 +17,7 @@ all_same_params = list() #used for saving scenario parameters--ends up being a l
 #each scenario can be accessed using all_same_params[[x]] where x is the scenario desired (goes in order of the values on the table)
 all_eligible_params = list()
 skewed_params = list()
-num_maternal_trees = c(50, 25, 10, 5, 2, 1) #different number of maternal trees to be sampled for each scenario
+num_maternal_trees = c(100, 50, 25, 10, 5, 2, 1) #different number of maternal trees to be sampled for each scenario
 
 #All same scenarios
 x = 1 #x is the list counter variable that names each of the lists
@@ -84,28 +84,55 @@ all_same_params = list() #used for saving scenario parameters--ends up being a l
 #each scenario can be accessed using all_same_params[[x]] where x is the scenario desired (goes in order of the values on the table)
 all_eligible_params = list()
 skewed_params = list()
-num_maternal_trees_skewed = c(50, 25, 10, 5, 5, 2)
+num_maternal_trees_skewed = c(100, 50, 25, 10, 5, 5, 2)
 
-#50 maternal trees
+#100 maternal trees
 x = 1
-total_seeds = c(seq(100, 500, by=100)) #manually saving the number of seeds total to sample
+total_seeds = c(seq(200, 400, by=200)) #manually saving the number of seeds total to sample
 for(i in 1:length(total_seeds)) {
   #all same
-  temp = list(num_maternal_trees_skewed[1], c((0.51*total_seeds[i]), rep((0.01*total_seeds[i]), 49)), 1, 1) #All same
+  temp = list(num_maternal_trees_skewed[1], c((0.50*total_seeds[i]), (0.01*total_seeds[i]), rep((0.005*total_seeds[i]), 98)), 1, 1) #All same
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
   }
   all_same_params[[x]] = temp #saving parameters
   #all eligible
-  temp = list(num_maternal_trees_skewed[1], c((0.51*total_seeds[i]), rep((0.01*total_seeds[i]), 49)), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i]))) #All eligible
+  temp = list(num_maternal_trees_skewed[1], c((0.50*total_seeds[i]), (0.01*total_seeds[i]), rep((0.005*total_seeds[i]), 98)), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i]))) #All eligible
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
   }
   all_eligible_params[[x]] = temp
   #skewed
-  temp = list(num_maternal_trees_skewed[1], c((0.51*total_seeds[i]), rep((0.01*total_seeds[i]), 49)), 10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5))) #skewed
+  temp = list(num_maternal_trees_skewed[1], c((0.50*total_seeds[i]), (0.01*total_seeds[i]), rep((0.005*total_seeds[i]), 98)), 10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5))) #skewed
+  if((round(sum(temp[[4]]), 4))!=1){
+    print(paste("pollen probability = ", sum(temp[[4]])))
+    break
+  }
+  skewed_params[[x]] = temp
+  x=x+1
+}
+
+#50 maternal trees
+total_seeds = c(seq(100, 500, by=100)) #manually saving the number of seeds total to sample
+for(i in 1:length(total_seeds)) {
+  #all same
+  temp = list(num_maternal_trees_skewed[2], c((0.51*total_seeds[i]), rep((0.01*total_seeds[i]), 49)), 1, 1) #All same
+  if((round(sum(temp[[4]]), 4))!=1){
+    print(paste("pollen probability = ", sum(temp[[4]])))
+    break
+  }
+  all_same_params[[x]] = temp #saving parameters
+  #all eligible
+  temp = list(num_maternal_trees_skewed[2], c((0.51*total_seeds[i]), rep((0.01*total_seeds[i]), 49)), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i]))) #All eligible
+  if((round(sum(temp[[4]]), 4))!=1){
+    print(paste("pollen probability = ", sum(temp[[4]])))
+    break
+  }
+  all_eligible_params[[x]] = temp
+  #skewed
+  temp = list(num_maternal_trees_skewed[2], c((0.51*total_seeds[i]), rep((0.01*total_seeds[i]), 49)), 10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5))) #skewed
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
@@ -117,19 +144,19 @@ for(i in 1:length(total_seeds)) {
 #25 maternal trees
 total_seeds = c(seq(50, 500, by=50))
 for(i in 1:length(total_seeds)) {
-  temp = list(num_maternal_trees_skewed[2], c((0.52*total_seeds[i]), rep((0.02*total_seeds[i]), 24)), 1, 1) #all same
+  temp = list(num_maternal_trees_skewed[3], c((0.52*total_seeds[i]), rep((0.02*total_seeds[i]), 24)), 1, 1) #all same
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
   }
   all_same_params[[x]] = temp
-  temp = list(num_maternal_trees_skewed[2], c((0.52*total_seeds[i]), rep((0.02*total_seeds[i]), 24)), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i]))) #all unique
+  temp = list(num_maternal_trees_skewed[3], c((0.52*total_seeds[i]), rep((0.02*total_seeds[i]), 24)), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i]))) #all unique
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
   }
   all_eligible_params[[x]] = temp
-  temp = list(num_maternal_trees_skewed[2], c((0.52*total_seeds[i]), rep((0.02*total_seeds[i]), 24)), 10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5))) #skewed
+  temp = list(num_maternal_trees_skewed[3], c((0.52*total_seeds[i]), rep((0.02*total_seeds[i]), 24)), 10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5))) #skewed
   if((round(sum(temp[[4]]), 4))!=1){
     paste("pollen probability = ", sum(temp[[4]]))
     break
@@ -141,19 +168,19 @@ for(i in 1:length(total_seeds)) {
 #10 maternal trees
 total_seeds = c(seq(20, 500, by=20))
 for(i in 1:length(total_seeds)) {
-  temp = list(num_maternal_trees_skewed[3], c((0.5*total_seeds[i]), (0.1*total_seeds[i]), rep((0.05*total_seeds[i]), 8)), 1, 1)
+  temp = list(num_maternal_trees_skewed[4], c((0.5*total_seeds[i]), (0.1*total_seeds[i]), rep((0.05*total_seeds[i]), 8)), 1, 1)
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
   }
   all_same_params[[x]] = temp
-  temp = list(num_maternal_trees_skewed[3], c((0.5*total_seeds[i]), (0.1*total_seeds[i]), rep((0.05*total_seeds[i]), 8)), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i])))
+  temp = list(num_maternal_trees_skewed[4], c((0.5*total_seeds[i]), (0.1*total_seeds[i]), rep((0.05*total_seeds[i]), 8)), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i])))
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
   }
   all_eligible_params[[x]] = temp
-  temp = list(num_maternal_trees_skewed[3], c((0.5*total_seeds[i]), (0.1*total_seeds[i]), rep((0.05*total_seeds[i]), 8)), 10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5)))
+  temp = list(num_maternal_trees_skewed[4], c((0.5*total_seeds[i]), (0.1*total_seeds[i]), rep((0.05*total_seeds[i]), 8)), 10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5)))
   if((round(sum(temp[[4]]), 4))!=1){
     paste("pollen probability = ", sum(temp[[4]]))
     break
@@ -165,7 +192,7 @@ for(i in 1:length(total_seeds)) {
 #5 maternal trees--max 80% skew
 total_seeds = c(seq(20,500,by=20))
 for(i in 1:length(total_seeds)) {
-  temp = list(num_maternal_trees_skewed[4], c((0.8*total_seeds[i]), rep((0.05*total_seeds[i]), 4)), 1, 1) #all same
+  temp = list(num_maternal_trees_skewed[5], c((0.8*total_seeds[i]), rep((0.05*total_seeds[i]), 4)), 1, 1) #all same
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
@@ -189,19 +216,19 @@ for(i in 1:length(total_seeds)) {
 #5 maternal trees--max 50% skew
 total_seeds = c(seq(10,500,by=10))
 for(i in 1:length(total_seeds)) {
-  temp = list(num_maternal_trees_skewed[5], c((0.5*total_seeds[i]), (0.2*total_seeds[i]), rep((0.1*total_seeds[i]), 3)), 1, 1)#all same
+  temp = list(num_maternal_trees_skewed[6], c((0.5*total_seeds[i]), (0.2*total_seeds[i]), rep((0.1*total_seeds[i]), 3)), 1, 1)#all same
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
   }
   all_same_params[[x]] = temp
-  temp = list(num_maternal_trees_skewed[5], c((0.5*total_seeds[i]), (0.2*total_seeds[i]), rep((0.1*total_seeds[i]), 3)), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i])))#all unique
+  temp = list(num_maternal_trees_skewed[6], c((0.5*total_seeds[i]), (0.2*total_seeds[i]), rep((0.1*total_seeds[i]), 3)), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i])))#all unique
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
   }
   all_eligible_params[[x]] = temp
-  temp = list(num_maternal_trees_skewed[5], c((0.5*total_seeds[i]), (0.2*total_seeds[i]), rep((0.1*total_seeds[i]), 3)), 10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5)))#skewed
+  temp = list(num_maternal_trees_skewed[6], c((0.5*total_seeds[i]), (0.2*total_seeds[i]), rep((0.1*total_seeds[i]), 3)), 10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5)))#skewed
   if((round(sum(temp[[4]]), 4))!=1){
     paste("pollen probability = ", sum(temp[[4]]))
     break
@@ -213,19 +240,19 @@ for(i in 1:length(total_seeds)) {
 #2 maternal trees
 total_seeds = c(seq(5,500,by=5))
 for(i in 1:length(total_seeds)) {
-  temp = list(num_maternal_trees_skewed[6], c((0.8*total_seeds[i]), (0.2*total_seeds[i])), 1, 1) # all same
+  temp = list(num_maternal_trees_skewed[7], c((0.8*total_seeds[i]), (0.2*total_seeds[i])), 1, 1) # all same
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
   }
   all_same_params[[x]] = temp
-  temp = list(num_maternal_trees_skewed[6], c((0.8*total_seeds[i]), (0.2*total_seeds[i])), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i]))) # all unique
+  temp = list(num_maternal_trees_skewed[7], c((0.8*total_seeds[i]), (0.2*total_seeds[i])), total_seeds[i], c(rep((1/total_seeds[i]), total_seeds[i]))) # all unique
   if((round(sum(temp[[4]]), 4))!=1){
     print(paste("pollen probability = ", sum(temp[[4]])))
     break
   }
   all_eligible_params[[x]] = temp
-  temp = list(num_maternal_trees_skewed[6], c((0.8*total_seeds[i]), (0.2*total_seeds[i])),  10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5))) # skewed
+  temp = list(num_maternal_trees_skewed[7], c((0.8*total_seeds[i]), (0.2*total_seeds[i])),  10, c(0.6, 0.2, rep(0.05, 3), rep(0.01, 5))) # skewed
   if((round(sum(temp[[4]]), 4))!=1){
     paste("pollen probability = ", sum(temp[[4]]))
     break
@@ -237,4 +264,4 @@ for(i in 1:length(total_seeds)) {
 #combined_list_params_skewed ends up having 261 elements 
 #so 261 scenarios are created 
 #saving the list in an Rdata file
-save(all_same_params, all_eligible_params, skewed_params, file="combined_list_params_skewed.Rdata")
+save(all_same_params, all_eligible_params, skewed_params, file="combined_list_params_skewed_new.Rdata")
