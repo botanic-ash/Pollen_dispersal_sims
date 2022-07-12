@@ -70,7 +70,7 @@ for(i in 1:length(num_maternal_trees)) { #loops over the vector of maternal tree
 #465 scenarios in each parameter list
 #so 1395 scenarios total are created
 #saving the list in an Rdata file 
-save(all_same_params, all_eligible_params, skewed_params, file="combined_list_params_new.Rdata")
+save(all_same_params, all_eligible_params, skewed_params, file="combined_list_params_711.Rdata")
 
 #***Note: all unique scenario currently is not that each seed sampled from a tree has a different father
 #it is just that each pollen donor (pollen donors = number of seeds to sample) has equal probability to 
