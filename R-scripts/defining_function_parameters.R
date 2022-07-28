@@ -264,4 +264,4 @@ for(i in 1:length(total_seeds)) {
 #combined_list_params_skewed ends up having 261 elements 
 #so 261 scenarios are created 
 #saving the list in an Rdata file
-save(all_same_params, all_eligible_params, skewed_params, file="combined_list_params_skewed_new.Rdata")
+save(all_same_params, all_eligible_params, skewed_params, file="combined_list_params_skewed_new_727.Rdata")

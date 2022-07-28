@@ -14,7 +14,7 @@ library(dplyr)
 
 setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
 ###MAKE SURE TO LOAD IN THE CORRECT DATA
-load("combined_list_params_711.Rdata") #loading in function parameters defined in defining_function_parameters.R script
+load("combined_list_params_skewed_new_727.Rdata") #loading in function parameters defined in defining_function_parameters.R script
 #this Rdata file contains the three list for all_same, all_eligible, and skewed scenarios 
 
 #including R-script containing functions used for import, conversions, and sampling
@@ -55,14 +55,14 @@ for(i in 1:num_loci){
 #saving each of the pollen donor scenarios in different arrays--we can combine them later if we need to! 
   #this is just easier because it's less filtering and more organized
 #Idealized scenarios
-prop_capt_all_same = array(dim=c(935,5,50))
-prop_capt_all_eligible = array(dim=c(935,5,50))
-prop_capt_skewed = array(dim=c(935,5,50))
+#prop_capt_all_same = array(dim=c(935,5,50))
+#prop_capt_all_eligible = array(dim=c(935,5,50))
+#prop_capt_skewed = array(dim=c(935,5,50))
 
 #realistic scenarios--we have different numbers of scenarios for each
-#prop_capt_all_same = array(dim=c(217,5,50))
-#prop_capt_all_eligible = array(dim=c(217,5,50))
-#prop_capt_skewed = array(dim=c(217,5,50))
+prop_capt_all_same = array(dim=c(217,5,50))
+prop_capt_all_eligible = array(dim=c(217,5,50))
+prop_capt_skewed = array(dim=c(217,5,50))
 
 
 #######################################################################################################
@@ -98,7 +98,7 @@ for(i in 1:length(genalex_list)) {
   total = 0  #sum to keep track of total alleles
   k=3 #counter variable for column (locus) of parental dataset
   for(z in 1:num_loci){
-    parental_allele_list = table(c(as.matrix(genetic_data[,k:k+1]))) #getting alleles and their frequencies for locus i in parental dataframe
+    parental_allele_list = table(c(as.matrix(genetic_data[,k:(k+1)]))) #getting alleles and their frequencies for locus i in parental dataframe
     #parental_allele_list = parental_allele_list[parental_allele_list>3] #subsetting parental data to only include alleles with frequency greater than 3
     total_names = names(parental_allele_list)
     total = total + n_distinct(total_names) #getting the number of distinct values for locus 1 to count alleles 
@@ -115,7 +115,7 @@ for(i in 1:length(genalex_list)) {
     captured = 0 #sum to keep track of alleles captured by sampling
     j=1 #counter variable to column (locus) of seed dataset 
     for(z in 1:num_loci) {
-      seed_allele_list = table(c(as.matrix(temp[,j:j+1]))) #getting unique values for locus i in seed dataframe 
+      seed_allele_list = table(c(as.matrix(temp[,j:(j+1)]))) #getting unique values for locus i in seed dataframe 
       captured_names = names(seed_allele_list)#getting the names of the alleles captured from sampling
       captured = captured + n_distinct(captured_names)#making sure none of the super rare alleles excluded from parental dataset are included here
       
@@ -141,7 +141,7 @@ for(i in 1:length(genalex_list)) {
     captured = 0 #sum to keep track of alleles captured by sampling
     j=1 #counter variable to column (locus) of seed dataset 
     for(z in 1:num_loci) {
-      seed_allele_list = table(c(as.matrix(temp[,j:j+1]))) #getting unique values for locus i in seed dataframe 
+      seed_allele_list = table(c(as.matrix(temp[,j:(j+1)]))) #getting unique values for locus i in seed dataframe 
       captured_names = names(seed_allele_list)#getting the names of the alleles captured from sampling
       captured = captured + n_distinct(captured_names)#making sure none of the super rare alleles excluded from parental dataset are included here
       
@@ -165,7 +165,7 @@ for(i in 1:length(genalex_list)) {
     captured = 0 #sum to keep track of alleles captured by sampling
     j=1 #counter variable to column (locus) of seed dataset 
     for(z in 1:num_loci) {
-      seed_allele_list = table(c(as.matrix(temp[,j:j+1]))) #getting unique values for locus i in seed dataframe 
+      seed_allele_list = table(c(as.matrix(temp[,j:(j+1)]))) #getting unique values for locus i in seed dataframe 
       captured_names = names(seed_allele_list)#getting the names of the alleles captured from sampling
       captured = captured + n_distinct(captured_names)#making sure none of the super rare alleles excluded from parental dataset are included here
       
@@ -190,9 +190,9 @@ colnames(prop_capt_all_eligible) = c("prop_capt", "total_seeds", "maternal_trees
 colnames(prop_capt_skewed) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
 
 #saving EQUAL results to Rdata file
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
-save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt_new.Rdata")
+#setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
+#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt_new_727.Rdata")
 
 #saving SKEWED results to Rdata file
-#setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
-#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt_skewed_new.Rdata")
+setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
+save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt_skewed_new_727.Rdata")
