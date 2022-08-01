@@ -8,12 +8,12 @@ library(ggpubr)
 library(wesanderson)
 
 #load in results from main_loop.R
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
+setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")#
 ###MAKE SURE TO LOAD IN THE CORRECT DATA
-load("prop_alleles_capt_new.Rdata")
-sample_type = "ideal"
-#load("prop_alleles_capt_skewed_new.Rdata")
-#sample_type = realistic
+#load("prop_alleles_capt_new_727.Rdata")
+#sample_type = "ideal"
+load("prop_alleles_capt_skewed_new_727.Rdata")
+sample_type = "realistic"
 
 ##########################################################################################
 #First type of plot:
@@ -24,8 +24,8 @@ skewed = array(dim=c(50,2))
 
 #defining which scenario (row) you want to pull out to plot 
 #NOTE: can make these a vector or list to loop over scenarios
-mat_trees=10
-num_seeds=200
+mat_trees=25
+num_seeds=400
 
 #looping over simulation replicates to pull equivalent scenarios to comapre among donor modes 
 for(i in 1:50){
@@ -58,7 +58,7 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
   theme_bw() +
   theme(axis.title = element_blank()) +
-  ylim(.5,.8) +
+  ylim(0.25,1) +
   theme(legend.position = "none")
 setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/Figures")
 ggsave(paste(num_seeds, "_", mat_trees, "_", sample_type, ".png", sep=""), height=5, width=5, units="in")
