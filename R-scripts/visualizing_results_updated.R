@@ -95,7 +95,7 @@ eligible_realistic = array(dim=c(50,3))
 skewed_realistic = array(dim=c(50,3))
 
 #defining which scenario to pull
-mat_trees = 100
+mat_trees = 10
 num_seeds = 200
 
 for(i in 1:50) {
