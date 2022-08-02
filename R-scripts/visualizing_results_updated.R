@@ -63,64 +63,87 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
 setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/Figures")
 ggsave(paste(num_seeds, "_", mat_trees, "_", sample_type, ".png", sep=""), height=5, width=5, units="in")
 
-#############################################################
+#############################################################################################
 #Now we are making plots directly comparing the scenarios where an equal number of seeds are sampled per tree
 #vs. scenarios where an unequal number of seeds are sampled
 #Here, we plot the two types of scenarios on the same plots 
 
-#load data
-load("prop_alleles_capt_new.Rdata")
-#renaming data to differentiate 
-prop_capt_all_same_equal = prop_capt_all_same
-prop_capt_all_eligible_equal = prop_capt_all_eligible
-prop_capt_skewed_equal = prop_capt_skewed
+#directory of Rdata
+setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
 
-#load data
-load("prop_alleles_capt_skewed_new.Rdata")
-prop_capt_all_same_skewed = prop_capt_all_same
-prop_capt_all_eligible_skewed = prop_capt_all_eligible
-prop_capt_skewed_skewed = prop_capt_skewed
+#renaming data to differentiate between sample types
+#load in ideal scenario data
+load("prop_alleles_capt_new_727.Rdata")
+prop_capt_all_same_ideal = prop_capt_all_same
+prop_capt_all_eligible_ideal = prop_capt_all_eligible
+prop_capt_skewed_ideal = prop_capt_skewed
+
+#load in realistic scenario data
+load("prop_alleles_capt_skewed_new_727.Rdata")
+prop_capt_all_same_realistic = prop_capt_all_same
+prop_capt_all_eligible_realistic = prop_capt_all_eligible
+prop_capt_skewed_realistic = prop_capt_skewed
 
 #defining arrays to store the results in for easy plotting - EQUAL
-same_equal = array(dim=c(50,3)) #50 rows for 50 replicates, 2 columns for prop_capt and donor type
-eligible_equal = array(dim=c(50,3))
-skewed_equal = array(dim=c(50,3))
+same_ideal = array(dim=c(50,3)) #50 rows for 50 replicates, 2 columns for prop_capt and donor type
+eligible_ideal = array(dim=c(50,3))
+skewed_ideal = array(dim=c(50,3))
 
 #defining arrays to store the results in for easy plotting- SKEWED
-same_skewed = array(dim=c(50,3)) #50 rows for 50 replicates, 2 columns for prop_capt and donor type
-eligible_skewed = array(dim=c(50,3))
-skewed_skewed = array(dim=c(50,3))
+same_realistic = array(dim=c(50,3)) #50 rows for 50 replicates, 2 columns for prop_capt and donor type
+eligible_realistic = array(dim=c(50,3))
+skewed_realistic = array(dim=c(50,3))
 
-####################
-#50 maternal trees 500 seeds
+#defining which scenario to pull
+mat_trees = 100
+num_seeds = 200
+
 for(i in 1:50) {
-  same_equal[i,1] = prop_capt_all_same_equal[10,1,i] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
-  same_equal[i,2] = prop_capt_all_same_equal[10,5,i]
-  same_equal[i,3] = "equal"
+  #SAME IDEAL
+  same_df_ideal = as.data.frame(prop_capt_all_same_ideal[,,i])
+  filter_same_df_ideal = filter(same_df_ideal, total_seeds==num_seeds, maternal_trees==mat_trees)
+  same_ideal[i,1] = filter_same_df_ideal[,1] #this is hard coded to pull the scenario--having issues filtering data from a 3D array
+  same_ideal[i,2] = filter_same_df_ideal[,5]
+  same_ideal[i,3] = "ideal"
   
-  same_skewed[i,1] = prop_capt_all_same_skewed[5,1,i]
-  same_skewed[i,2] = prop_capt_all_same_skewed[5,5,i]
-  same_skewed[i,3] = "skewed"
+  #SAME REALISTIC
+  same_df_realistic = as.data.frame(prop_capt_all_same_realistic[,,i])
+  filter_same_df_realistic = filter(same_df_realistic, total_seeds==num_seeds, maternal_trees==mat_trees)
+  same_realistic[i,1] = filter_same_df_realistic[,1]
+  same_realistic[i,2] = filter_same_df_realistic[,5]
+  same_realistic[i,3] = "realistic"
   
-  eligible_equal[i,1] = prop_capt_all_eligible_equal[10,1,i]
-  eligible_equal[i,2] = prop_capt_all_eligible_equal[10,5,i]
-  eligible_equal[i,3] = "equal"
+  #ELIGIBLE IDEAL
+  eligible_df_ideal = as.data.frame(prop_capt_all_eligible_ideal[,,i])
+  filter_eligible_df_ideal = filter(eligible_df_ideal, total_seeds==num_seeds, maternal_trees==mat_trees)
+  eligible_ideal[i,1] = filter_eligible_df_ideal[,1]
+  eligible_ideal[i,2] = filter_eligible_df_ideal[,5]
+  eligible_ideal[i,3] = "ideal"
   
-  eligible_skewed[i,1] = prop_capt_all_eligible_skewed[5,1,i]
-  eligible_skewed[i,2] = prop_capt_all_eligible_skewed[5,5,i]
-  eligible_skewed[i,3] = "skewed"
+  #ELIGIBLE REALISTIC
+  eligible_df_realistic = as.data.frame(prop_capt_all_eligible_realistic[,,i])
+  filter_eligible_df_realistic = filter(eligible_df_realistic, total_seeds==num_seeds, maternal_trees==mat_trees)
+  eligible_realistic[i,1] = filter_eligible_df_realistic[,1]
+  eligible_realistic[i,2] = filter_eligible_df_realistic[,5]
+  eligible_realistic[i,3] = "realistic"
   
-  skewed_equal[i,1] = prop_capt_skewed_equal[10,1,i]
-  skewed_equal[i,2] = prop_capt_skewed_equal[10,5,i]
-  skewed_equal[i,3] = "equal"
+  #SKEWED IDEAL
+  skewed_df_ideal = as.data.frame(prop_capt_skewed_ideal[,,i])
+  filter_skewed_df_ideal = filter(skewed_df_ideal, total_seeds==num_seeds, maternal_trees==mat_trees)
+  skewed_ideal[i,1] = filter_skewed_df_ideal[,1]
+  skewed_ideal[i,2] = filter_skewed_df_ideal[,5]
+  skewed_ideal[i,3] = "ideal"
   
-  skewed_skewed[i,1] = prop_capt_skewed_skewed[5,1,i]
-  skewed_skewed[i,2] = prop_capt_skewed_skewed[5,5,i]
-  skewed_skewed[i,3] = "skewed"
+  #SKEWED REALISTIC
+  skewed_df_realistic = as.data.frame(prop_capt_skewed_realistic[,,i])
+  filter_skewed_df_realistic = filter(skewed_df_realistic, total_seeds==num_seeds, maternal_trees==mat_trees)
+  skewed_realistic[i,1] = filter_skewed_df_realistic[,1]
+  skewed_realistic[i,2] = filter_skewed_df_realistic[,5]
+  skewed_realistic[i,3] = "realistic"
 }
 
 #data processing for plotting
-equal_comparison = rbind(same_equal, eligible_equal, skewed_equal, same_skewed, eligible_skewed, skewed_skewed)
+equal_comparison = rbind(same_ideal, eligible_ideal, skewed_ideal, same_realistic, eligible_realistic, skewed_realistic)
 equal_comparison = as.data.frame(equal_comparison)
 colnames(equal_comparison) = c("prop_capt", "donor_type", "scenario_type")
 #plotting using a boxplot, includes all simulation replicates to note variation 
@@ -130,9 +153,25 @@ ggplot(data=equal_comparison, aes(x=donor_type, y=as.numeric(prop_capt), fill=sc
   ylab("Proportion of alleles captured") +
   xlab("Pollen donation type") +
   labs(color="donor_type", fill="scenario_type") +
-  ggtitle("50 maternal trees, 500 seeds total") +
+  ggtitle(paste(num_seeds, "seeds from", mat_trees, "trees")) +
   scale_fill_manual(values = wes_palette("Moonrise3", n = 3)) +
   theme_bw() +
   theme(axis.title = element_blank()) +
-  ylim(0.85,1)
-ggsave("comparison_50_500.png", height=5, width=5, units="in")
+  ylim(0.25,1)
+setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/Figures")
+ggsave(paste(num_seeds, "_", mat_trees, "_comparison", ".png", sep=""), height=5, width=5, units="in")
+
+##########################
+#comparing proportion of alleles captured between ideal and realistic scnearios 
+#pick a scenario, and get proportion of alleles captured for all replicates
+#then, average prop. alleles captured across all replicates 
+
+#taking the average of all scenarios 
+mean(as.numeric(same_ideal[,1]))
+mean(as.numeric(same_realistic[,1]))
+  
+mean(as.numeric(eligible_ideal[,1]))
+mean(as.numeric(eligible_realistic[,1]))
+  
+mean(as.numeric(skewed_ideal[,1]))
+mean(as.numeric(skewed_realistic[,1]))
