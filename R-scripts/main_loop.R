@@ -23,7 +23,7 @@ source("R-scripts/import_seed_functions.R")
 source("R-scripts/arp2gen_edit.R")
 
 #defining the working directory containing simulation files
-mydir = "Simulations/one_pop_2500"
+mydir = "Simulations/one_pop_2500/"
 
 #importing and converting arlequin files to genepop files
 import_arp2gen_files(mydir,".arp$")
@@ -84,7 +84,7 @@ for(i in 1:length(genalex_list)) {
   print(paste("replicate number ", i))
   #first import and process the data
   #import genalex files as dataframe
-  genetic_data = read.csv(genalex_list[[i]], header=FALSE)
+  genetic_data = read.csv(paste(mydir, genalex_list[[i]], sep=""), header=FALSE)
   #cut off first 2 rows in dataframe -- this is the population data, which is not required for our purposes
   genetic_data = genetic_data[-2,]
   genetic_data = genetic_data[-1,]
