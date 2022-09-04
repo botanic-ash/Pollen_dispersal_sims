@@ -12,19 +12,18 @@ library(poppr)
 library(tidyr)
 library(dplyr)
 
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
+
 ###MAKE SURE TO LOAD IN THE CORRECT DATA
-load("combined_list_params_skewed_new_727.Rdata") #loading in function parameters defined in defining_function_parameters.R script
+load("R-scripts/combined_list_params_skewed_new_727.Rdata") #loading in function parameters defined in defining_function_parameters.R script
 #this Rdata file contains the three list for all_same, all_eligible, and skewed scenarios 
 
 #including R-script containing functions used for import, conversions, and sampling
-source("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts/import_seed_functions.R")
+source("R-scripts/import_seed_functions.R")
 #including edited arp2gen function 
-source("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts/arp2gen_edit.R")
+source("R-scripts/arp2gen_edit.R")
 
 #defining the working directory containing simulation files
-mydir = "C:/Users/kayle/Documents/Pollen_dispersal_sims/Simulations/one_pop_2500"
-setwd(mydir)
+mydir = "Simulations/one_pop_2500"
 
 #importing and converting arlequin files to genepop files
 import_arp2gen_files(mydir,".arp$")
@@ -74,7 +73,6 @@ prop_capt_skewed = array(dim=c(217,5,50))
 #list of genalex files for all simulation replicates--genalex files end in .csv
 #these have the simulated genetic data
 genalex_list = list.files(mydir, ".csv$")
-setwd(mydir)
 
 #Main loop overview:
   #for every simulation replicate, process data to be usable for the function
@@ -190,9 +188,7 @@ colnames(prop_capt_all_eligible) = c("prop_capt", "total_seeds", "maternal_trees
 colnames(prop_capt_skewed) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
 
 #saving EQUAL results to Rdata file
-#setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
-#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt_new_727.Rdata")
+save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/prop_alleles_capt_new_727.Rdata")
 
 #saving SKEWED results to Rdata file
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
-save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="prop_alleles_capt_skewed_new_727.Rdata")
+#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/prop_alleles_capt_skewed_new_727.Rdata")
