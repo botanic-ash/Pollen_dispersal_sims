@@ -11,7 +11,6 @@
 #Fixed seeds/tree
 #parameters are in the order: dataset (genalex file--not included here, will be added in main loop), 
 #num maternal trees to sample, num seeds to sample, pollen donors, pollen probability
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
 
 all_same_params = list() #used for saving scenario parameters--ends up being a list of lists
 #each scenario can be accessed using all_same_params[[x]] where x is the scenario desired (goes in order of the values on the table)
@@ -264,4 +263,4 @@ for(i in 1:length(total_seeds)) {
 #combined_list_params_skewed ends up having 261 elements 
 #so 261 scenarios are created 
 #saving the list in an Rdata file
-save(all_same_params, all_eligible_params, skewed_params, file="combined_list_params_skewed_new_727.Rdata")
+save(all_same_params, all_eligible_params, skewed_params, file="R-scripts/combined_list_params_skewed_new_727.Rdata")

@@ -8,11 +8,10 @@ library(ggpubr)
 library(wesanderson)
 
 #load in results from main_loop.R
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")#
 ###MAKE SURE TO LOAD IN THE CORRECT DATA
-#load("prop_alleles_capt_new_727.Rdata")
+#load("R-scripts/prop_alleles_capt_new_727.Rdata")
 #sample_type = "ideal"
-load("prop_alleles_capt_skewed_new_727.Rdata")
+load("R-scripts/prop_alleles_capt_skewed_new_727.Rdata")
 sample_type = "realistic"
 
 ##########################################################################################
@@ -60,16 +59,13 @@ ggplot(data=equal_comparison, aes(x=(donor_type), y=as.numeric(prop_capt), group
   theme(axis.title = element_blank()) +
   ylim(0.25,1) +
   theme(legend.position = "none")
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/Figures")
-ggsave(paste(num_seeds, "_", mat_trees, "_", sample_type, ".png", sep=""), height=5, width=5, units="in")
+ggsave(paste("Figures", num_seeds, "_", mat_trees, "_", sample_type, ".png", sep=""), height=5, width=5, units="in")
 
 #############################################################################################
 #Now we are making plots directly comparing the scenarios where an equal number of seeds are sampled per tree
 #vs. scenarios where an unequal number of seeds are sampled
 #Here, we plot the two types of scenarios on the same plots 
 
-#directory of Rdata
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/R-scripts")
 
 #renaming data to differentiate between sample types
 #load in ideal scenario data
@@ -79,7 +75,7 @@ prop_capt_all_eligible_ideal = prop_capt_all_eligible
 prop_capt_skewed_ideal = prop_capt_skewed
 
 #load in realistic scenario data
-load("prop_alleles_capt_skewed_new_727.Rdata")
+load("R-scripts/prop_alleles_capt_skewed_new_727.Rdata")
 prop_capt_all_same_realistic = prop_capt_all_same
 prop_capt_all_eligible_realistic = prop_capt_all_eligible
 prop_capt_skewed_realistic = prop_capt_skewed
@@ -158,8 +154,7 @@ ggplot(data=equal_comparison, aes(x=donor_type, y=as.numeric(prop_capt), fill=sc
   theme_bw() +
   theme(axis.title = element_blank()) +
   ylim(0.25,1)
-setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims/Figures")
-ggsave(paste(num_seeds, "_", mat_trees, "_comparison", ".png", sep=""), height=5, width=5, units="in")
+ggsave(paste("Figures/", num_seeds, "_", mat_trees, "_comparison", ".png", sep=""), height=5, width=5, units="in")
 
 ##########################
 #comparing proportion of alleles captured between ideal and realistic scnearios 
