@@ -12,9 +12,10 @@ library(poppr)
 library(tidyr)
 library(dplyr)
 
+setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims")
 
 ###MAKE SURE TO LOAD IN THE CORRECT DATA
-load("R-scripts/combined_list_params_711.Rdata") #loading in function parameters defined in defining_function_parameters.R script
+load("R-scripts/combined_list_params_skewed_new_727.Rdata") #loading in function parameters defined in defining_function_parameters.R script
 #this Rdata file contains the three list for all_same, all_eligible, and skewed scenarios 
 
 #including R-script containing functions used for import, conversions, and sampling
@@ -54,9 +55,9 @@ for(i in 1:num_loci){
 #saving each of the pollen donor scenarios in different arrays--we can combine them later if we need to! 
   #this is just easier because it's less filtering and more organized
 #Idealized scenarios
-#prop_capt_all_same = array(dim=c(935,5,50))
-#prop_capt_all_eligible = array(dim=c(935,5,50))
-#prop_capt_skewed = array(dim=c(935,5,50))
+# prop_capt_all_same = array(dim=c(935,5,50))
+# prop_capt_all_eligible = array(dim=c(935,5,50))
+# prop_capt_skewed = array(dim=c(935,5,50))
 
 #realistic scenarios--we have different numbers of scenarios for each
 prop_capt_all_same = array(dim=c(217,5,50))
@@ -188,7 +189,7 @@ colnames(prop_capt_all_eligible) = c("prop_capt", "total_seeds", "maternal_trees
 colnames(prop_capt_skewed) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
 
 #saving EQUAL results to Rdata file
-save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/prop_alleles_capt_two_pop.Rdata")
+#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/prop_alleles_capt_two_pop.Rdata")
 
 #saving SKEWED results to Rdata file
-#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/prop_alleles_capt_realistic_two_pop.Rdata")
+save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/prop_alleles_capt_realistic_two_pop.Rdata")
