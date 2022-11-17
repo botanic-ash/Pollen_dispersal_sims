@@ -15,7 +15,7 @@ library(dplyr)
 setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims")
 
 ###MAKE SURE TO LOAD IN THE CORRECT DATA
-load("R-scripts/combined_list_params_skewed_new_727.Rdata") #loading in function parameters defined in defining_function_parameters.R script
+load("R-scripts/Rdata/combined_list_params_711.Rdata") #loading in function parameters defined in defining_function_parameters.R script
 #this Rdata file contains the three list for all_same, all_eligible, and skewed scenarios 
 
 #including R-script containing functions used for import, conversions, and sampling
@@ -23,8 +23,8 @@ source("R-scripts/import_seed_functions.R")
 #including edited arp2gen function 
 source("R-scripts/arp2gen_edit.R")
 
-#Defining this because arp2gen didn't like relative file paths 
-mydir = "C:/Users/kayle/Documents/Pollen_dispersal_sims/Simulations/two_pop_2500/"
+#Defining this because arp2gen didn't want to use relative file paths 
+mydir = "C:/Users/kayle/Documents/Pollen_dispersal_sims/Simulations/one_pop_2500/"
 
 #importing and converting arlequin files to genepop files
 import_arp2gen_files(mydir,".arp$")
@@ -48,21 +48,22 @@ for(i in 1:num_loci){
 }
 
 #creating a container to store the results of sampling and other important data
-# five columns to save the proportion of alleles captured, number of seeds sampled,
-#number of trees sampled, and number of pollen donors, and the donor type (5 cols)
+# five columns to save the proportion of alleles captured, 
+#number of seeds sampled, number of trees sampled, pollen donor type (6 cols),
+#number of alleles captured, total and number of alleles present, and simulation replicate 
 #each row indicates the scenario (465)
 #the third dimension is the simulation replicate (50)
 #saving each of the pollen donor scenarios in different arrays--we can combine them later if we need to! 
   #this is just easier because it's less filtering and more organized
 #Idealized scenarios
-# prop_capt_all_same = array(dim=c(935,5,50))
-# prop_capt_all_eligible = array(dim=c(935,5,50))
-# prop_capt_skewed = array(dim=c(935,5,50))
+prop_capt_all_same = array(dim=c(935,7,50))
+prop_capt_all_eligible = array(dim=c(935,7,50))
+prop_capt_skewed = array(dim=c(935,7,50))
 
 #realistic scenarios--we have different numbers of scenarios for each
-prop_capt_all_same = array(dim=c(217,5,50))
-prop_capt_all_eligible = array(dim=c(217,5,50))
-prop_capt_skewed = array(dim=c(217,5,50))
+# prop_capt_all_same = array(dim=c(217,7,50))
+# prop_capt_all_eligible = array(dim=c(217,7,50))
+# prop_capt_skewed = array(dim=c(217,7,50))
 
 
 #######################################################################################################
@@ -76,10 +77,10 @@ prop_capt_skewed = array(dim=c(217,5,50))
 genalex_list = list.files(mydir, ".csv$")
 
 #Main loop overview:
-  #for every simulation replicate, process data to be usable for the function
-  #then, we have three separate loops, that loop over the parameters created in defining_function_parameters.R
+  #for every simulation replicate, process data to get in the format required for the function sample_seed()
+  #then, we have three separate loops that loop over the parameters created in defining_function_parameters.R for each pollen donor type
   #there are three separate loops for the three pollen donor scnearios (skewed, all eligble, and all same)
-  #calculate proportion of alleles captured by 
+  #calculate proportion of alleles captured by dividing number of alleles sampled / total alleles present in the simulation
   #finally, save results (prop. alleles capt, number seeds sampled, number trees sampled, and number pollen donors)
 for(i in 1:length(genalex_list)) {
   print(paste("replicate number ", i))
@@ -123,13 +124,16 @@ for(i in 1:length(genalex_list)) {
     prop_capt_all_same[x,1,i] = (captured/total)#proportion of alleles captured = captured/total, save these results
     prop_capt_all_same[x,2,i] = sum(all_same_params[[x]][[2]])#total seeds sampled --if possible, change all_same_params[[x]][[2]][[1]] hard coding 
     prop_capt_all_same[x,3,i] = (all_same_params[[x]][[1]]) #number of trees sampled 
-    prop_capt_all_same[x,4,i] = (all_same_params[[x]][[3]]) #number of pollen donors
-    prop_capt_all_same[x,5,i] = "all_same"
+    prop_capt_all_same[x,5,i] = captured
     #clearing out containers
     rm(captured_names)
     rm(seed_allele_list)
     rm(temp)
   }
+  #defining these columns with vectors to speed up code 
+  prop_capt_all_same[,4,i] = "all_same"
+  prop_capt_all_same[,6,i] = total
+  prop_capt_all_same[,7,i] = i
   
   #'all eligible' sampling
   for(x in 1:length(all_eligible_params)) {
@@ -149,13 +153,16 @@ for(i in 1:length(genalex_list)) {
     prop_capt_all_eligible[x,1,i] = (captured/total) #proportion of alleles captured= captured/total
     prop_capt_all_eligible[x,2,i] = sum(all_eligible_params[[x]][[2]])#total seeds sampled
     prop_capt_all_eligible[x,3,i] = (all_eligible_params[[x]][[1]]) #number of trees sampled 
-    prop_capt_all_eligible[x,4,i] = (all_eligible_params[[x]][[3]]) #number of pollen donors
-    prop_capt_all_eligible[x,5,i] = "all_eligible"
+    prop_capt_all_eligible[x,5,i] = captured
     #clearing out containers
     rm(captured_names)
     rm(seed_allele_list)
     rm(temp)
   }
+  prop_capt_all_eligible[,4,i] = "all_eligible"
+  prop_capt_all_eligible[,6,i] = total
+  prop_capt_all_eligible[,7,i] = i
+  
   
   #skewed sampling
   for(x in 1:length(skewed_params)) {
@@ -173,23 +180,27 @@ for(i in 1:length(genalex_list)) {
     prop_capt_skewed[x,1,i] = (captured/total)#proportion of alleles captured = captured/ total
     prop_capt_skewed[x,2,i] = sum(skewed_params[[x]][[2]])#total seeds sampled
     prop_capt_skewed[x,3,i] = (skewed_params[[x]][[1]]) #number of trees sampled 
-    prop_capt_skewed[x,4,i] = (skewed_params[[x]][[3]]) #number of pollen donors
-    prop_capt_skewed[x,5,i] = "skewed"
+    prop_capt_skewed[x,5,i] = captured
     #clearing out containers
     rm(captured_names)
     rm(seed_allele_list)
     rm(temp)
   }
+  prop_capt_skewed[,4,i] = "skewed"
+  prop_capt_skewed[,6,i] = total
+  prop_capt_skewed[,7,i] = i
+  
+  
   rm(total_names)
   rm(parental_allele_list)
 }
 
-colnames(prop_capt_all_same) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
-colnames(prop_capt_all_eligible) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
-colnames(prop_capt_skewed) = c("prop_capt", "total_seeds", "maternal_trees", "num_donors", "donor_type")
+colnames(prop_capt_all_same) = c("prop_capt", "total_seeds", "maternal_trees", "donor_type", "num_capt", "total_alleles", "replicate")
+colnames(prop_capt_all_eligible) = c("prop_capt", "total_seeds", "maternal_trees",  "donor_type", "num_capt", "total_alleles", "replicate")
+colnames(prop_capt_skewed) = c("prop_capt", "total_seeds", "maternal_trees", "donor_type", "captured", "total_alleles", "replicate")
 
-#saving EQUAL results to Rdata file
-#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/prop_alleles_capt_two_pop.Rdata")
+#saving ideal results to Rdata file
+save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/Rdata/alleles_capt_ideal_onepop.Rdata")
 
-#saving SKEWED results to Rdata file
-save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/prop_alleles_capt_realistic_two_pop.Rdata")
+#saving realistic results to Rdata file
+#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/alleles_capt_realistic_onepop.Rdata")
