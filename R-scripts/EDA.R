@@ -7,7 +7,11 @@ library(ggplot2)
 theme_set(theme_bw())
 
 #load in data 
+<<<<<<< HEAD
 load("alleles_capt_ideal_onepop.Rdata")
+=======
+load("R-scripts/Rdata/alleles_capt_ideal_onepop.Rdata")
+>>>>>>> 9a7801144ef32f8c8337959219542b000ee1ee59
 
 ############################################################################################
 #GET DATA IN PROPER FORMAT FOR PLOTTING AN ANALYSIS
@@ -41,6 +45,7 @@ rm(temp)
 #This is considered tidy format? 
 tidy_df = rbind(same_long, eligible_long, skewed_long)
 tidy_df = as.data.frame(tidy_df)
+<<<<<<< HEAD
 #Just adding a column indicating the number of failures (number of alleles not captured) for binomial data
 tidy_df$num_fails = c(as.numeric(tidy_df$total_alleles) - as.numeric(tidy_df$num_capt))
 
@@ -95,10 +100,36 @@ tidy_df %>%
     geom_point(alpha=0.25) +
     facet_wrap(vars(maternal_trees)) +
     ylim(0,1) +
+=======
+
+############################################################################################
+#EXPLORATORY DATA ANALYSIS 
+
+#Plot of total alleles present in simulations--to see the distribution of variation between simulation replicates 
+ggplot(tidy_df, aes(x=total_alleles)) +
+    geom_bar()
+
+#Plotting curves 
+tidy_df %>% 
+    ggplot(aes(x=total_seeds, y=prop_capt, color=donor_type)) +
+    geom_point(alpha=0.25) +
+    geom_jitter() +
+    theme(axis.text.x=element_blank(),
+                         axis.ticks.x=element_blank(),
+                         axis.text.y=element_blank(),
+                         axis.ticks.y=element_blank()) +
+    facet_wrap(vars(maternal_trees))
+
+tidy_df %>% 
+    filter(total_seeds==100) %>% 
+    ggplot(aes(x=total_seeds, y=prop_capt, color=donor_type)) +
+    geom_point(alpha=0.25) +
+>>>>>>> 9a7801144ef32f8c8337959219542b000ee1ee59
     geom_jitter() +
     theme(axis.text.x=element_blank(),
           axis.ticks.x=element_blank(),
           axis.text.y=element_blank(),
+<<<<<<< HEAD
           axis.ticks.y=element_blank())
 
 #Boxplots of specific scenarios for each # of maternal tree sampled, 100 total seeds sampled
@@ -126,3 +157,7 @@ tidy_df %>%
           axis.ticks.x=element_blank(),
           axis.text.y=element_blank(),
           axis.ticks.y=element_blank())
+=======
+          axis.ticks.y=element_blank()) +
+    facet_wrap(vars(maternal_trees))
+>>>>>>> 9a7801144ef32f8c8337959219542b000ee1ee59
