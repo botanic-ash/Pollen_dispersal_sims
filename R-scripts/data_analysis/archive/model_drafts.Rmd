@@ -1,0 +1,145 @@
+---
+output: github_document
+---
+
+# Model drafts
+Bayesian binomial GLMM 
+
+***
+
+```{r}
+#Load libraries 
+library(rstanarm)
+library(dplyr)
+library(ggplot2)
+options(mc.cores = parallel::detectCores())
+
+source("../source/hpdi.R")
+
+#Load in data 
+load("../individual_project/tidy_df.Rdata")
+```
+
+***
+
+### Writing the statistical model  
+
+The response variable is the proportion of alleles captured, which is a binomially distributed variable (success of capturing an allele, vs. the failure of not capturing it). Here (I believe...), we have one trial, as the sampling scenarios are done only 1 time each for each simulation replicate (which is the grouping variable). That is--each sampling scenario is done 1 time per group.  
+
+$$
+y_{i} \sim\ Binomial(p_{j[i]}, N=1)
+$$
+The predictor variables are the total seeds sampled, which is related to the number of maternal trees sampled and the number of seeds sampled per tree. I am doing it this way first to simplify the model in terms of numbers of predictors. The other predictor variable is the pollen donor type. I have not included interactions to simplify the model again. The grouping variable is the simulation replicate, as each sampling scenario is repeated within each simulation replicate, and there is some variation between simulation replicates in terms of the number of alleles simulated. We have squared terms for each of the predictors (unsure of this part?) to give the curved shape. 
+
+$$
+logit(p_{j[i]}) = \alpha _{j[i]} + \beta _{1j[i]}X_{i1} + \beta _{2j[i]}X_{i1}^2 + \beta _{3j[i]}X_{i2} + \beta _{4j[i]}X_{i2}^2
+$$
+Here, both the intercept and slopes can vary across groups: 
+$$
+\alpha_j \sim\ Normal(\mu _{\alpha}, \sigma _{\alpha}^2)
+$$
+$$
+\beta_j \sim\ Normal(\mu _{\beta}, \sigma _{\beta}^2)
+$$
+
+***
+
+### Fitting the model 
+Here I am fitting the model--a Bayesian GLMM. The response variable is the proportion of alleles captured for a given sample scenario. Here, We have an interaction between total seeds and donor type. The response variable depends on the interaction of pollen donor type and total seeds sampled. This way, we can get estimates for separate slopes for each donor type.  
+**NOTE:** Here I am only using the scenario of 1 maternal tree as a simplified model. To get estimates for the other scenarios, we need to use the whole dataset, and add an interaction of number of maternal trees. 
+```{r}
+tidy_df$prop_capt = as.numeric(tidy_df$prop_capt)
+tidy_df$total_seeds = as.numeric(tidy_df$total_seeds)
+#Just using scenarios with 1 maternal tree
+#and taking a random sample of those because these scenarios account for roughly half of the total data...
+subset_df_1tree = tidy_df %>% filter(maternal_trees==1)
+subset_100 = subset_df_1tree %>% filter(total_seeds<100)
+temp1 = subset_100[sample(nrow(subset_100), 500),]
+temp2 = subset_df_1tree[sample(nrow(subset_df_1tree), 1000),]
+subset_df_1tree = rbind(temp1, temp2)
+model_3 = stan_glmer(prop_capt ~ total_seeds * donor_type + (1|replicate), weights=total_seeds, 
+                     family = binomial(link='logit'), data = subset_df_1tree, iter = 2500)
+save(model_3, file = "../individual_project/model_3.Rdata")
+load("../individual_project/model_3.Rdata")
+summary(model_3, digits = 4)
+```
+The number of effective samples is looking good with iterations increased to 3000. 
+
+***
+
+### Researching priors 
+Examining the default priors used in the model above: 
+```{r}
+priors = prior_summary(model_3)
+priors
+priors$prior
+```
+The scaled priors are Normal(0, 2.5) for the intercept and all 5 betas (centered at 0 with a standard deviation of 2.5). The adjusted priors show the priors on the original data scale. A Normal(0, 2.5) prior is shown plotted below: 
+```{r}
+# Calculate the curve for Normal(0,2.5)
+theta <- seq(-10, 10, 0.1)
+prior2.5 <- dnorm(theta, mean=0, sd=2.5)
+# Outline polygon for 1 sd area under the curve
+auc_1_sd <- c(prior2.5[abs(theta) <= 1], 0, 0)
+theta_uc <- c(theta[abs(theta) <= 1], 1, -1)
+auc_df <- data.frame(theta_uc, auc_1_sd)
+# Plot distribution and 1 sd under curve
+data.frame(theta, prior2.5) %>% 
+    ggplot() +
+    geom_polygon(data=auc_df, 
+                 mapping=aes(x=theta_uc, y=auc_1_sd), fill="grey") +
+    geom_line(mapping=aes(x=theta, y=prior2.5)) +
+    ylab("density")
+```
+The default priors used here are okay to represent the data. Most of the parameter values obtained in the model above fall close to 0, with only a few parameters exceeding 1 standard deviation from the mean. 
+
+***
+
+### Model checks
+Completing model diagnostics
+```{r}
+launch_shinystan(model_3)
+#Distribution of observed data vs replications, overlaid densities
+pp_check(model_3, plotfun = "ppc_dens_overlay_grouped", group="donor_type", nreps=30)
+```
+In ShinyStan, we can see that the MCMC chains have converged for all parameters, and the posterior distributions look normal. 
+In the plot above, this data does resemble the real data. I grouped the data by pollen donor type, and we can see that all same captured a much lower proportion of alleles (x-axis) than skewed and all eligible, which is to be expected. All eligible captures the highest proportion of alleles (close to 1--all alleles). 
+
+```{r}
+#Distribution of observed data vs replications, histograms
+pp_check(model_3, plotfun = "hist")
+#Distribution of observed data vs replications, boxplots
+pp_check(model_3, plotfun = "boxplot", nreps=30)
+# Distributions of test statistic, mean
+pp_check(model_3, plotfun = "stat", stat = "mean")
+# Distributions of test statistic, sd
+pp_check(model_3, plotfun = "stat", stat = "sd")
+# Distributions of test statistic, max
+pp_check(model_3, plotfun = "stat", stat = "max")
+# Scatterplot of y vs. average yrep
+pp_check(model_3, plotfun = "scatter_avg")
+# Residuals
+pp_check(model_3, plotfun = "error_hist", nreps = 6)
+```
+
+***
+
+### Plotting the fitted model with the data: 
+```{r}
+newd = data.frame(total_seeds=rep(seq(1,500,1),3), donor_type=factor(rep(c("all_eligible", "all_same", "skewed"), each=500)))
+pmu = posterior_linpred(model_3, re.form=NA, transform = TRUE, newdata=newd)
+mnmu = colMeans(pmu)
+n <- ncol(pmu) #or nrow(newd)
+regression_intervals <- data.frame(mulo95=rep(NA,n), muhi95=rep(NA,n))
+for ( i in 1:n ) {
+    regression_intervals[i,] <- hpdi(pmu[,i], prob=0.95)
+}
+
+preds <- cbind(newd, mnmu, regression_intervals)
+
+ggplot(data=preds) +
+    geom_ribbon(mapping = aes(x=total_seeds, ymin=mulo95, max=muhi95, fill=donor_type), alpha=0.2) +
+    geom_point(data=tidy_df %>% filter(maternal_trees==1), aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), color=donor_type), alpha=0.1) +
+    geom_line(mapping = aes(x=total_seeds, y=mnmu, lty=donor_type)) 
+```
+The fit isn't perfect. It is good that the model estimates separate slopes for each donor type, with all_eligible having the highest predicted values of the proportion of alleles captured, and all_same with the lowest. That is what we expect from the data! However, the intercepts are a bit off--they are much higher than the data would predict. We would expect intercepts at (0,0), since 0 seeds sampled corresponds to 0 diversity captured. This is because the data is actually nonlinear, so a generalized linear model does not perfectly model the data. 

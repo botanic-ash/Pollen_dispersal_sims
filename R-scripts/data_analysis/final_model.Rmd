@@ -1,0 +1,410 @@
+---
+output: github_document
+---
+
+# Individual project for Data Science for Biologists course 
+This script contains (almost) all information for the course project including:  
+* Exploratory data analysis  
+* Math model  
+* Model fit   
+* Prior justification   
+* Model diagnostics   
+* Model inferences  
+* Conclusions    
+
+
+**A more detailed overview of the dataset of interest, study design, and goals can be found in the markdown script project_overview.md (includes sketch of data design)**   
+
+***
+
+## Exploratory Data Analysis 
+**Data was pre-processed to tidy format in the script data_prep.Rmd**
+In this section, the data is explored using graphics in ggplot.  
+```{r}
+#Load libraries required for the whole script
+library(rstanarm)
+options(mc.cores = parallel::detectCores())
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+theme_set(theme_bw())
+
+source("../source/hpdi.R")
+
+#Load in data 
+load("../individual_project/tidy_df.Rdata")
+```
+
+1. Examine the data
+```{r}
+#head(View(tidy_df))
+```
+
+2. Visualizing the data 
+Plot of total alleles present in simulation replicates to see the distribution of variation between replicates 
+Each bar represents a different count of alleles
+The 3 increments on the plot show the allele count being present in one, two, or three different simulations by chance 
+However, most replicates model a different number of total alleles due to the stochastic simulations 
+```{r}
+ggplot(tidy_df, aes(x=as.numeric(total_alleles))) +
+    geom_bar() +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank())
+```
+
+Showing a table of all instances of total alleles present in simulations 
+Occurence values of 2805 = present in 1 independent simulation (935 scenarios x pollen donors = 1 simulation)
+Occurence values of 5610 = present in 2 independent simulations 
+Occurence values of 8415 = present in 3 independent simulations 
+Also, the total alleles simulated in simulations ranges from 235 to 288
+--this results in variation during sampling as well, for the same sample size of 50 seeds, 
+you may capture more diversity in the simulation with 235 alleles than 288 total alleles
+```{r}
+table(tidy_df$total_alleles)
+```
+
+**Plotting all the data!**
+Plot proportion of alleles captured vs total number of seeds sampled for each number of maternal trees
+Here we see that in scenarios with fewer maternal trees sampled (facet 1, 2), there are greater differences in the proportion of alleles captured between pollen donor scenarios (large difference between the curves)
+In scenarios with more maternal trees sampled (facet 50, 100), similar proportion of alleles are captured across donor types (though there is less information here with fewer scenarios). 
+Additionally, comparing a given pollen donor type across varying number of trees sampled (compare a color across facets), we see that when more maternal trees are sampled, 
+much more diversity is captured (curve gets higher--greater proportion of alleles captured ).
+Lastly, when more seeds are sampled per tree (going along the x-axis), we see a slight increase in the diversity captured (see curves upward)
+```{r}
+tidy_df %>% 
+    ggplot(aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), color=donor_type)) +
+    geom_point(alpha=0.25) +
+    facet_wrap(vars(maternal_trees)) +
+    ylim(0,1)
+```
+
+Inspecting scenarios more closely--100 seeds total sampled, faceted by number of maternal trees sampled again and proportion of alleles captured on the y-axis (plotted with jitter to spread points across x-axis)
+Again, we see the trend of pollen donor type appearing to have more influence on the proportion of alleles captured in scenarios with fewer maternal trees sampled, since most of the diversity would be coming from pollen donors in these cases. 
+```{r}
+tidy_df %>% 
+    filter(total_seeds==100) %>% 
+    ggplot(aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), color=donor_type)) +
+    geom_point(alpha=0.25) +
+    facet_wrap(vars(maternal_trees)) +
+    ylim(0,1) +
+    geom_jitter() 
+```
+
+Boxplots of specific scenarios for each # of maternal tree sampled, 100 total seeds sampled
+Again, this shows the variation in alleles captured for each pollen donor type in scenarios with fewer maternal trees
+When many maternal trees are sampled, there is no difference in diversity captured 
+```{r}
+tidy_df %>% 
+    filter(total_seeds==100) %>% 
+    ggplot(aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), color=donor_type)) +
+    geom_boxplot(alpha=0.25) +
+    facet_wrap(vars(maternal_trees)) +
+    ylim(0,1) 
+```
+
+Plotting a scenario of 1 maternal tree sampled to better view the curve of the data 
+```{r}
+tidy_df %>% 
+    filter(maternal_trees==1) %>% 
+    ggplot(aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), color=donor_type)) +
+    geom_point(alpha=0.25) +
+    facet_wrap(vars(maternal_trees)) +
+    ylim(0,1)
+```
+
+***  
+
+## Math model 
+The response variable is the proportion of alleles captured, which is a binomially distributed variable (success of capturing an allele, vs. the failure of not capturing it--here represented as a proportion). We have one trial, as the sampling scenarios are done only 1 time each for each simulation replicate (which is the grouping variable). That is--each sampling scenario is done 1 time per group.  
+$$
+y_{i} \sim\ Binomial(p_{j[i]}, N=1)
+$$
+The predictor variables are the total seeds sampled, number of maternal trees sampled, and pollen donor type. Maternal trees sampled and pollen donor type are both factors with various levels (7 and 3 levels respectively). I have included interactions between all predictor variables to get parameter estimates for each different number of maternal tree sampled and each pollen donation type. The grouping variable is the simulation replicate, as each sampling scenario is repeated for all simulation replicates, and there is some variation between simulation replicates in terms of the number of alleles simulated (see EDA).  [j] represents the grouping term, simulation replicate, and [i] represents the different sampling scenarios within those group.  
+Here I am using a logit link function to model the data--representing the log probability of capturing an allele vs. the probability of not capturing the allele for a given sample size. 
+
+$$
+ln(\frac {p_{j[i]}}{1-p_{j[i]}})  = \alpha _{j[i]} + \beta _{1j[i]}X_{i1} + \beta _{2j[i]}X_{i1}^2 +...+ \beta_{40j[i]}
+$$
+There are 41 total parameters ($\alpha$ represents the intercept, and slopes are represented by $\beta$), including all predictors and their interactions. 
+Additionally, both the intercept and slopes can vary across groups [j]: 
+$$
+\alpha_j \sim\ Normal(\mu _{\alpha}, \sigma _{\alpha}^2)
+$$
+$$
+\beta_j \sim\ Normal(\mu _{\beta}, \sigma _{\beta}^2)
+$$
+
+***  
+
+## Model Fit
+Fitting a Bayesian GLMM with a binomial response variable on less than 10% of the total dataset due to time crunch and computational constraints. Here, some of this code is commented out since it takes so long to compile, so I'm just pulling the model fit from a previous run that I saved in an Rdata file (the code used to generate that result is the exact same as shown here)
+```{r}
+#Converting these to numeric--they already should be, but they must have been converted accidentally when making the matrix a dataframe, etc...
+# tidy_df$prop_capt = as.numeric(tidy_df$prop_capt)
+# tidy_df$total_seeds = as.numeric(tidy_df$total_seeds)
+# #Subsetting the data to use 10% of the actual dataset (for time crunch purposes)
+# subset_data = tidy_df[sample(nrow(tidy_df), 10000),]
+# #Running the model
+# final_model = stan_glmer(prop_capt ~ total_seeds * maternal_trees * donor_type + (1|replicate),
+#                          weights=total_seeds, family = binomial(link='logit'), data = subset_data, 
+#                          iter = 5000)
+# #Save the model since it takes so long to run
+# save(subset_data, final_model, file = "../individual_project/final_model.Rdata")
+#Load the model from previously saved run
+load("../individual_project/final_model.Rdata")
+#Model summary! 
+summary(final_model, digits = 4)
+```
+The summary output gives us all the model parameter estimates that we want, intercepts and slopes. There are a lot of parameters since we have 3 predictor variables, two of which are factors with various levels (donor type and maternal trees sampled). The grouping variable, simulation replicate, adds 50 parameters as well. 
+We don't see much difference in the mean estimates for all the simulation replicates--this means the amount of variation attributed to this grouping variable is quite low. However, it's still necessary to add this to the model. 
+The number of effective samples is still a bit low for the grouping terms, even after increasing iterations to 5000, but I can't increase it more due to time constraints. So take the rest of the results with a grain of salt! However, to make these results more robust, I would increase iterations to give a higher number of effective samples (around 1000) for the simulation replicate estimates. 
+
+***  
+  
+## Plotting the fitted model with the data: 
+To verify if the model represents the real data, here I have plotted the data with the fitted model:
+```{r}
+#Creating a new dataframe of values to base predictions on 
+newd = data.frame(maternal_trees=factor(rep(c(1,2,5,10,25,50,100), each=1500)), total_seeds=rep(seq(1,500,1),21), donor_type=factor(rep((rep(c("all_eligible", "all_same", "skewed"), each=500)), 7)))
+#Pulling predictions from the posterior distribution 
+pmu = posterior_linpred(final_model, re.form=NA, transform = TRUE, newdata=newd)
+mnmu = colMeans(pmu)
+n <- ncol(pmu) #or nrow(newd)
+#Getting regression intervals 
+regression_intervals <- data.frame(mulo95=rep(NA,n), muhi95=rep(NA,n))
+for ( i in 1:n ) {
+    regression_intervals[i,] <- hpdi(pmu[,i], prob=0.95)
+}
+
+#Creating a dataframe to plot in ggplot 
+preds <- cbind(newd, mnmu, regression_intervals)
+
+#Plotting the data
+ggplot(data=preds)  +
+    geom_ribbon(mapping = aes(x=total_seeds, ymin=mulo95, max=muhi95, fill=donor_type), alpha=0.2) +
+    geom_point(data = subset_data, aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), color=donor_type), alpha=0.25) +
+    facet_wrap(vars(maternal_trees)) +
+    geom_line(mapping = aes(x=total_seeds, y=mnmu, lty=donor_type)) +
+    ylim(0,1) +
+    ylab("Proportion of alleles captured") +
+    xlab("Total seeds sampled")
+```
+
+The fitted model doesn't exactly match the data. Looking at the plotted data points, you can see that the relationship is nonlinear, so a GLM will not work perfectly. That nonlinear relationship is currently not derived and would take a bit of work to do. To make this model more accurate, a nonlinear model should be fitted to this data. One of the biggest issues with the current model is the intercepts are not representative of the data--they are much higher than they should be. Intercepts for all curves should be 0, since 0 trees sampled = 0 diversity conserved. In the case of this model, higher intercepts results in overestimating the amount of diversity one can capture in the smaller sample sizes. Following the curve of the actual data points, we see that when very few seeds are sampled, the diversity captured is low for all donor types. Then, it quickly increases for skewed and all_eligible. 
+However, the model here successfully provides the parameter estimates of interest, with separate intercepts and slopes for each number of maternal trees sampled, and each donor type within those plots. The model predicts that scenarios with 'all_eligible' pollen donors will allow for the highest genetic diversity captured, and 'all_same' to have the least diversity captured. Additionally, it predicts that when more maternal trees are sampled, more diversity is captured across all donor types. Particularly, as more maternal trees are sampled, this highly influences the diversity captured for all_same scenarios. In nearly all scenarios, all_eligible can capture close to 100% diversity if enough seeds are sampled. However, skewed and especially all_same scenarios are constricted based on their lower number of possible pollen donors. Thus, to capture efficient diversity with these more realistic pollen donation mechanisms, a greater number of unique maternal trees needs to be sampled. 
+These takeaways are quantified and explored in more detail below.  
+
+***  
+
+## Researching priors 
+Examining the default priors used in the model above: 
+```{r}
+priors = prior_summary(final_model)
+priors
+priors$prior
+```
+The scaled priors are Normal(0, 2.5) for the intercept and all betas (centered at 0 with a standard deviation of 2.5). The adjusted priors show the priors on the original data scale. A Normal(0, 2.5) prior is shown plotted below: 
+```{r}
+# Calculate the curve for Normal(0,2.5)
+theta <- seq(-10, 10, 0.1)
+prior2.5 <- dnorm(theta, mean=0, sd=2.5)
+# Outline polygon for 1 sd area under the curve
+auc_1_sd <- c(prior2.5[abs(theta) <= 1], 0, 0)
+theta_uc <- c(theta[abs(theta) <= 1], 1, -1)
+auc_df <- data.frame(theta_uc, auc_1_sd)
+# Plot distribution and 1 sd under curve
+data.frame(theta, prior2.5) %>% 
+    ggplot() +
+    geom_polygon(data=auc_df, 
+                 mapping=aes(x=theta_uc, y=auc_1_sd), fill="grey") +
+    geom_line(mapping=aes(x=theta, y=prior2.5)) +
+    ylab("density")
+```
+The default priors used here are okay to represent the data. Most of the parameter values obtained in the model above (see summary code) fall close to 0, with only a few parameters exceeding 1 standard deviation from the mean.  
+  
+***
+
+## Model checks/diagnostics 
+Shinystan won't load on my pc due to a lack of memory, so here, I've extracted a few parameters to determine if the chains have converged.   
+```{r}
+intercept_trace <- rstan::extract(final_model$stanfit, pars="alpha", permuted=FALSE)
+data.frame(intercept_trace) %>% 
+    mutate(iteration=1:n()) %>%
+    pivot_longer(cols=starts_with("chain"),
+                 names_to="chain",
+                 values_to="alpha") %>%
+    ggplot() +
+    geom_line(mapping=aes(x=iteration, y=alpha, col=chain))
+```
+```{r}
+b1_trace <- rstan::extract(final_model$stanfit, pars="total_seeds", permuted=FALSE)
+data.frame(b1_trace) %>% 
+    mutate(iteration=1:n()) %>%
+    pivot_longer(cols=starts_with("chain"),
+                 names_to="chain",
+                 values_to="alpha") %>%
+    ggplot() +
+    geom_line(mapping=aes(x=iteration, y=alpha, col=chain))
+```
+```{r}
+b10_trace <- rstan::extract(final_model$stanfit, pars="total_seeds:maternal_trees10", permuted=FALSE)
+data.frame(b10_trace) %>% 
+    mutate(iteration=1:n()) %>%
+    pivot_longer(cols=starts_with("chain"),
+                 names_to="chain",
+                 values_to="alpha") %>%
+    ggplot() +
+    geom_line(mapping=aes(x=iteration, y=alpha, col=chain))
+```
+```{r}
+b36_trace <- rstan::extract(final_model$stanfit, pars="total_seeds:maternal_trees10:donor_typeskewed", permuted=FALSE)
+data.frame(b36_trace) %>% 
+    mutate(iteration=1:n()) %>%
+    pivot_longer(cols=starts_with("chain"),
+                 names_to="chain",
+                 values_to="alpha") %>%
+    ggplot() +
+    geom_line(mapping=aes(x=iteration, y=alpha, col=chain))
+```
+From the trace plots of these selected parameters, we can see that the chains have converged. 
+
+```{r}
+#Distribution of observed data vs replications, overlaid densities
+pp_check(final_model, plotfun = "ppc_dens_overlay_grouped", group="maternal_trees", nreps=30)
+```
+In the plot above, this simulated data does resemble the real data--the density curves showing the real, observed data fits very well to the simulated data. I grouped the data by maternal trees sampled. The 3 humps that are seen on some of the plots (with fewer maternal trees sampled), distinctly represent the three donor types--all_same, skewed, and all_eligible. That's because the difference in genetic diversity captured between the donor types is strongest when fewer maternal trees are sampled. We see those 3 humps merge into ont hump for the scenarios with more maternal trees sampled, because in those scenarios, the difference between pollen donor types is less drastic. 
+```{r}
+#Distribution of observed data vs replications, histograms
+pp_check(final_model, plotfun = "hist")
+```
+In general, the simulated data again closely resembles the observed data. The simulated data doesn't recreate that extremely tall bar shown in the real data, so that particular area could use more investigation.  
+```{r}
+#Plotting residuals 
+pp_check(final_model, plotfun = "error_hist", nreps = 6)
+```
+The residuals look relatively normal (slight skew) with small variation. All residuals are pretty close to zero. 
+```{r}
+#Distributions of mean
+pp_check(final_model, plotfun = "stat", stat = "mean")
+```
+The simulated mean does not line up with the observed mean, but numerically, the difference is small (0.615 to ~0.628). The observed mean is likely lower than the simulated mean because the model does not accurately predict values on the x-axis which are close to zero--it overestimates those values compared to the real data. 
+```{r}
+# Distributions of standard deviation
+pp_check(final_model, plotfun = "stat", stat = "sd")
+```
+Again, the distribution of the standard deviation is not lining up with the observed mean. The estimated standard deviation is slightly lower, meaning the data has less spread than the observed data. Again, this is the result of the model not predicting the lower values accurately. However, the estimated sd doesn't vary much numerically compared to the observed (0.001-0.002 roughly). 
+```{r}
+#Scatterplot of y vs. average simulated y 
+pp_check(final_model, plotfun = "scatter_avg")
+```
+Most of the observed data lines up with the simulated data; however there are a few values that don't which fall close to zero on the observed data scale. Again, this is likely because the model does not accurately estimate the lower values of total seeds sampled properly (see fitted model plotted with data). 
+Overall, these plots show that the simulated data varies slightly from the observed data due to the model not predicting the lower values accurately. Numerically, the difference is quite small though. 
+  
+***  
+
+## Model inferences 
+Comparing the differences in slopes between pollen donor types for a few maternal tree scenarios. Here I've just selected a few scenarios due to time constraints, but it would be interesting to repeat this for the entire dataset (apologies for plotting everything separately, I would make it more organized, but I am crunched for time :) ). 
+Below, I selected scenarios with 1 maternal tree and 50 maternal trees. 1 maternal tree is an interesting scenario because from the EDA, that's where we see the largest differences in pollen donation types in terms of diversity captured. 50 maternal trees is where we see very small if not negligible differences in the diversity captured between donor types. Additionally, this is a common recommendation for sampling guidelines--to sample 50 individuals in a population. 
+I am not investigating the impacts of other predictors (total seeds sampled, number of maternal trees) directly, because those are well understood in the literature (more trees sampled = more diversity, more seeds sampled = more diversity, but not as much as sampling unique trees). I was mostly interested in the interaction between pollen donor mechanisms, the number of seeds sampled, and number of maternal trees sampled (i.e., determining how that relationship of diversity captured for each donor type changes as more seeds are sampled and as more trees are sampled).
+```{r}
+#Difference between all_same and all_eligible scenarios 
+diff <- pmu[,1:500] - pmu[,501:1000]
+diff_mn <- colMeans(diff)
+n <- ncol(diff)
+diff_cpi <- data.frame(difflo95=rep(NA,n), diffhi95=rep(NA,n))
+for ( i in 1:n ) {
+    diff_cpi[i,] <- quantile(diff[,i], prob=c(0.025,0.975))
+}
+diff_df <- data.frame(cbind(diff_mn, diff_cpi, total_seeds=newd$total_seeds[1:500]))
+#Plotting the difference:
+diff_df %>% 
+    ggplot() +
+    geom_ribbon(mapping=aes(x=total_seeds, ymin=difflo95, ymax=diffhi95), alpha=0.2) +
+    geom_line(mapping=aes(x=total_seeds, y=diff_mn)) +
+    xlab("Total seeds sampled") +
+    ylab("Difference in diversity captured (all_eligible - all_same)")
+```
+From this plot, we can see that the difference in genetic diversity captured by all_eligible and all_same becomes greater as more seeds are sampled from 1 maternal tree. Additionally, the difference in diversity captured is really large between these two donor types! All_eligible scenarios capture between 50 and 70% more than all_same scenarios.  
+  
+Comparing the differences in slopes between all_eligible and skewed for 1 maternal tree
+```{r}
+rm(diff_mn)
+rm(diff_df)
+#Difference between all_same and all_eligible scenarios 
+diff <- pmu[,1:500] - pmu[,1001:1500]
+diff_mn <- colMeans(diff)
+n <- ncol(diff)
+diff_cpi <- data.frame(difflo95=rep(NA,n), diffhi95=rep(NA,n))
+for ( i in 1:n ) {
+    diff_cpi[i,] <- quantile(diff[,i], prob=c(0.025,0.975))
+}
+diff_df <- data.frame(cbind(diff_mn, diff_cpi, total_seeds=newd$total_seeds[1:500]))
+#Plotting the difference:
+diff_df %>% 
+    ggplot() +
+    geom_ribbon(mapping=aes(x=total_seeds, ymin=difflo95, ymax=diffhi95), alpha=0.2) +
+    geom_line(mapping=aes(x=total_seeds, y=diff_mn)) +
+    xlab("Total seeds sampled") +
+    ylab("Difference in diversity captured (all_eligible - all_same)")
+```
+The difference in diversity captured for all_eligible and skewed is less drastic but still somewhat large, about 20-30% difference, again with all_eligible capturing the most diversity. Furthermore, over time, we see the same trend of the difference becoming larger as more seeds are sampled from one tree. This is because in skewed scenarios, there is a constrained number of potential pollen donors (14), compared to all_eliglble, where all the trees in the population can pollinate another. So the total diversity is limited in the case of skewed (and all_same) scenarios. 
+Below, comparing skewed to all_same:  
+```{r}
+rm(diff_mn)
+rm(diff_df)
+#Difference between all_same and all_eligible scenarios 
+diff <- pmu[,1001:1500]- pmu[,501:1000] 
+diff_mn <- colMeans(diff)
+n <- ncol(diff)
+diff_cpi <- data.frame(difflo95=rep(NA,n), diffhi95=rep(NA,n))
+for ( i in 1:n ) {
+    diff_cpi[i,] <- quantile(diff[,i], prob=c(0.025,0.975))
+}
+diff_df <- data.frame(cbind(diff_mn, diff_cpi, total_seeds=newd$total_seeds[1:500]))
+#Plotting the difference:
+diff_df %>% 
+    ggplot() +
+    geom_ribbon(mapping=aes(x=total_seeds, ymin=difflo95, ymax=diffhi95), alpha=0.2) +
+    geom_line(mapping=aes(x=total_seeds, y=diff_mn)) +
+    xlab("Total seeds sampled") +
+    ylab("Difference in diversity captured (all_eligible - all_same)")
+```
+The difference between skewed and all_same pollen mechanisms also becomes larger as more seeds are sampled, and the difference ranges from 30-40%, so slightly larger than comparing all_eligible to skewed. 
+
+Comparing all_eligible and all_same for 50 maternal trees sampled. 
+```{r}
+rm(diff_mn)
+rm(diff_df)
+#Difference between all_same and all_eligible scenarios 
+diff <- pmu[,7501:8000] - pmu[,8001:8500]
+diff_mn <- colMeans(diff)
+n <- ncol(diff)
+diff_cpi <- data.frame(difflo95=rep(NA,n), diffhi95=rep(NA,n))
+for ( i in 1:n ) {
+    diff_cpi[i,] <- quantile(diff[,i], prob=c(0.025,0.975))
+}
+diff_df <- data.frame(cbind(diff_mn, diff_cpi, total_seeds=newd$total_seeds[1:500]))
+#Plotting the difference:
+diff_df %>% 
+    ggplot() +
+    geom_ribbon(mapping=aes(x=total_seeds, ymin=difflo95, ymax=diffhi95), alpha=0.2) +
+    geom_line(mapping=aes(x=total_seeds, y=diff_mn)) +
+    xlab("Total seeds sampled") +
+    ylab("Difference in diversity captured (all_eligible - all_same)")
+```
+The difference between all_eligible and all_same (the pollen donor types in which we would expect the greatest difference in diversity captured) is now small, ranging from roughly 0-5%. What's interesting is that the model predicts that when fewer seeds are sampled, all_same captures more diversity than all_eligible (see the negative difference on the y-axis). This likely wouldn't occur in reality, but since they are so close anyway, it's likely fine. 
+This is an important finding--that the pollen donor assumption doesn't have a very large effect/difference in diversity captured, because in practice, it is commonly recommended to sample 50 individuals per population to capture a 'sufficient' amount of genetic diversity. These results indicate that that recommendation is robust to different pollen donation mechanisms and assumptions. 
+
+Overall, these plots indicate that the pollen donation mechanism for a species of interest has a lot of influence on the genetic diversity captured by a given sample size, particularly when a small number of maternal trees is sampled. The simulation software Simcoal uses an 'all_eligible' pollen donation mechanism, where all individuals in the population can mate with one another, which is something typically not seen in reality. Reality is closer to the 'skewed' mechanism, where the closest trees are the ones mating with each other. This influences the amount of diversity represented in the landscape, and thus influences how many alleles one can capture in a given sample size. When fewer maternal trees are sampled than the recommended guideline of 50 individuals, the pollen donation mechanism for the species of interest may cause you to capture less diversity than expected.   
+
+***  
+
+## Conclusions  
+Overall, though the model is not perfectly fitted to the data and I was unable to complete the necessary posterior predictive checks to validate the model, we can still get some important inferences from the model, taking those caveats into consideration:   
+    1. All_eligible pollen donors will capture the most diversity across most scenarios, followed by skewed and all_same. However, this result is strongest when few maternal trees are sampled. If 50 maternal trees are sampled (the recommended guideline) there is a very small difference in the diversity captured across pollen donor types.  
+    2. The difference in diversity captured between donor types increases as more seeds are sampled from a tree.  
+    3. In almost all scenarios, the model predicts that all_eligible pollen donation can reach 100% alleles captured quickly. However, for all_same and skewed, more maternal trees need to be sampled in order to reach close to 100% alleles captured.   
+  
+To build on this project I would want to create a nonlinear model to better represent the data and create more accurate predictions for scenarios with a few seeds sampled. Additionally, I would want to quantify the relationship between the number of maternal trees sampled with these model inferences. Even though that relationship is mostly known, it would be good to see how it varies based on the pollen donor assumptions. Lastly, I would like to incorporate the number of seeds sampled per tree in the model. Currently it is somewhat represented by the predictor total_seeds, but I would like to quantify the relationship to determine what the tradeoff of sampling more seeds from a single tree vs. sampling more unique maternal trees is. This is a really important question in research. Overall, the data indicates that sampling more seeds from a single tree can result in more diversity captured, depending on the pollen donor assumptions (see plots of 1 maternal tree, data for all_eligible and skewed curves up and levels off at some point). 
