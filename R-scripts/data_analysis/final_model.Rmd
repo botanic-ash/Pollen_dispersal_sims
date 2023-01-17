@@ -29,10 +29,10 @@ library(tidyr)
 library(ggplot2)
 theme_set(theme_bw())
 
-source("../source/hpdi.R")
+source("hpdi.R")
 
 #Load in data 
-load("../individual_project/tidy_df.Rdata")
+load("tidy_df.Rdata")
 ```
 
 1. Examine the data
@@ -151,9 +151,9 @@ Fitting a Bayesian GLMM with a binomial response variable on less than 10% of th
 #                          weights=total_seeds, family = binomial(link='logit'), data = subset_data, 
 #                          iter = 5000)
 # #Save the model since it takes so long to run
-# save(subset_data, final_model, file = "../individual_project/final_model.Rdata")
+# save(subset_data, final_model, file = "final_model.Rdata")
 #Load the model from previously saved run
-load("../individual_project/final_model.Rdata")
+load("final_model.Rdata")
 #Model summary! 
 summary(final_model, digits = 4)
 ```
