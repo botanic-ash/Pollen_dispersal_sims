@@ -15,7 +15,8 @@ library(dplyr)
 setwd("C:/Users/kayle/Documents/Pollen_dispersal_sims")
 
 ###MAKE SURE TO LOAD IN THE CORRECT DATA
-load("R-scripts/Rdata/combined_list_params_711.Rdata") #loading in function parameters defined in defining_function_parameters.R script
+#load("R-scripts/combined_list_params_ideal.Rdata") #loading in function parameters defined in defining_function_parameters.R script
+load("R-scripts/combined_list_params_realistic.Rdata")
 #this Rdata file contains the three list for all_same, all_eligible, and skewed scenarios 
 
 #including R-script containing functions used for import, conversions, and sampling
@@ -56,14 +57,14 @@ for(i in 1:num_loci){
 #saving each of the pollen donor scenarios in different arrays--we can combine them later if we need to! 
   #this is just easier because it's less filtering and more organized
 #Idealized scenarios
-prop_capt_all_same = array(dim=c(935,7,50))
-prop_capt_all_eligible = array(dim=c(935,7,50))
-prop_capt_skewed = array(dim=c(935,7,50))
+#prop_capt_all_same = array(dim=c(935,7,50))
+#prop_capt_all_eligible = array(dim=c(935,7,50))
+#prop_capt_skewed = array(dim=c(935,7,50))
 
 #realistic scenarios--we have different numbers of scenarios for each
-# prop_capt_all_same = array(dim=c(217,7,50))
-# prop_capt_all_eligible = array(dim=c(217,7,50))
-# prop_capt_skewed = array(dim=c(217,7,50))
+prop_capt_all_same = array(dim=c(217,7,50))
+prop_capt_all_eligible = array(dim=c(217,7,50))
+prop_capt_skewed = array(dim=c(217,7,50))
 
 
 #######################################################################################################
@@ -200,7 +201,7 @@ colnames(prop_capt_all_eligible) = c("prop_capt", "total_seeds", "maternal_trees
 colnames(prop_capt_skewed) = c("prop_capt", "total_seeds", "maternal_trees", "donor_type", "captured", "total_alleles", "replicate")
 
 #saving ideal results to Rdata file
-save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/Rdata/alleles_capt_ideal_onepop.Rdata")
+#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="../../R-scripts/Rdata/alleles_capt_ideal_onepop.Rdata")
 
 #saving realistic results to Rdata file
-#save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="R-scripts/alleles_capt_realistic_onepop.Rdata")
+save(prop_capt_all_same, prop_capt_all_eligible, prop_capt_skewed, file="../../R-scripts/Rdata/alleles_capt_realistic_onepop.Rdata")

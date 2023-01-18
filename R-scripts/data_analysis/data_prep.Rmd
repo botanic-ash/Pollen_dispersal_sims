@@ -15,7 +15,10 @@ theme_set(theme_bw())
 
 Load in data
 ```{r}
-load("alleles_capt_ideal_onepop.Rdata")
+#Ideal
+#load("../../R-scripts/Rdata/alleles_capt_ideal_onepop.Rdata")
+#Realistic
+load("../../R-scripts/Rdata/alleles_capt_realistic_onepop.Rdata")
 ```
 ***
 
@@ -57,4 +60,5 @@ tidy_df = rbind(same_long, eligible_long, skewed_long)
 tidy_df = as.data.frame(tidy_df)
 #' Just adding a column indicating the number of failures (number of alleles not captured) for binomial data
 tidy_df$num_fails = c(as.numeric(tidy_df$total_alleles) - as.numeric(tidy_df$num_capt))
+save(tidy_df, file="../../R-scripts/Rdata/tidy_df_realistic.Rdata")
 ```
