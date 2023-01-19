@@ -26,7 +26,7 @@ tidy_df$maternal_trees = as.numeric(tidy_df$maternal_trees)
 transformed_model = glm(prop_capt ~ log(total_seeds) * maternal_trees * donor_type,
                           weights=total_seeds, family = binomial(link='logit'), data = tidy_df)
 # #Save the model since it takes so long to run
-save(subset_data_new, transformed_model, file = "transformed_model.Rdata")
+save(transformed_model, file = "transformed_model.Rdata")
 #Load the model from previously saved run
 load("transformed_model.Rdata")
 #Model summary! 
@@ -44,7 +44,7 @@ preds <- cbind(newd, pmu)
 
 #Plotting the data
 ggplot(data=preds) +
-    geom_point(data = subset_data_new, aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), color=donor_type), alpha=0.25) +
+    geom_point(data = tidy_df, aes(x=as.numeric(total_seeds), y=as.numeric(prop_capt), color=donor_type), alpha=0.25) +
     facet_wrap(vars(maternal_trees)) +
     geom_line(mapping = aes(x=total_seeds, y=pmu, lty=donor_type)) +
     ylim(0,1) +
