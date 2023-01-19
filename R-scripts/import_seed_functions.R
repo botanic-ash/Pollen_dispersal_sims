@@ -66,11 +66,11 @@ sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_polle
       #create y number of seeds that collectors are sampling per tree
       for(y in 1:(num_seeds_to_sample[x])) {
         #####################
-        #testing
-        # print("Loop iterations")
-        # print(y)
-        # print("Current x")
-        # print(x)
+        # #testing
+        #   print("Current tree:")
+        #   print(x)
+        #   print("Number seed:")
+        #   print(y)
         #####################
         #choose father based on probability vector 
         if(length(fathers)>1){
