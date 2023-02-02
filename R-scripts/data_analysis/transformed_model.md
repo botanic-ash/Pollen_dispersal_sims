@@ -4,7 +4,15 @@
 library(rstanarm)
 ```
 
+    ## Warning: package 'rstanarm' was built under R version 4.0.5
+
     ## Loading required package: Rcpp
+
+    ## Warning: replacing previous import 'lifecycle::last_warnings' by
+    ## 'rlang::last_warnings' when loading 'tibble'
+
+    ## Warning: replacing previous import 'lifecycle::last_warnings' by
+    ## 'rlang::last_warnings' when loading 'pillar'
 
     ## This is rstanarm version 2.21.3
 
@@ -21,6 +29,8 @@ options(mc.cores = parallel::detectCores())
 library(dplyr)
 ```
 
+    ## Warning: package 'dplyr' was built under R version 4.0.5
+
     ## 
     ## Attaching package: 'dplyr'
 
@@ -34,7 +44,17 @@ library(dplyr)
 
 ``` r
 library(tidyr)
+```
+
+    ## Warning: package 'tidyr' was built under R version 4.0.5
+
+``` r
 library(ggplot2)
+```
+
+    ## Warning: package 'ggplot2' was built under R version 4.0.5
+
+``` r
 theme_set(theme_bw())
 
 source("hpdi.R")
@@ -50,12 +70,7 @@ tidy_df$total_seeds = as.numeric(tidy_df$total_seeds)
 tidy_df$maternal_trees = as.numeric(tidy_df$maternal_trees)
 #Running the model
 transformed_model = glm(prop_capt ~ log(total_seeds) * maternal_trees * donor_type,
-                          weights=total_seeds, family = binomial(link='logit'), data = tidy_df)
-```
-
-    ## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
-
-``` r
+                          weights=total_seeds, data = tidy_df)
 # #Save the model since it takes so long to run
 save(transformed_model, file = "transformed_model.Rdata")
 #Load the model from previously saved run
@@ -67,50 +82,49 @@ summary(transformed_model, digits = 4)
     ## 
     ## Call:
     ## glm(formula = prop_capt ~ log(total_seeds) * maternal_trees * 
-    ##     donor_type, family = binomial(link = "logit"), data = tidy_df, 
-    ##     weights = total_seeds)
+    ##     donor_type, data = tidy_df, weights = total_seeds)
     ## 
     ## Deviance Residuals: 
     ##      Min        1Q    Median        3Q       Max  
-    ## -28.9175   -1.4151   -0.1883    1.0569   11.1638  
+    ## -11.6722   -0.7678   -0.0784    0.4258    8.1515  
     ## 
     ## Coefficients:
     ##                                                      Estimate Std. Error
-    ## (Intercept)                                        -1.5952723  0.0097853
-    ## log(total_seeds)                                    0.6690339  0.0017414
-    ## maternal_trees                                      0.0319706  0.0012266
-    ## donor_typeall_same                                  0.5632364  0.0134966
-    ## donor_typeskewed                                    0.9318726  0.0129512
-    ## log(total_seeds):maternal_trees                    -0.0048363  0.0002135
-    ## log(total_seeds):donor_typeall_same                -0.6489173  0.0023768
-    ## log(total_seeds):donor_typeskewed                  -0.4647758  0.0022867
-    ## maternal_trees:donor_typeall_same                   0.1353492  0.0026443
-    ## maternal_trees:donor_typeskewed                     0.0233368  0.0023228
-    ## log(total_seeds):maternal_trees:donor_typeall_same -0.0019413  0.0004588
-    ## log(total_seeds):maternal_trees:donor_typeskewed    0.0070384  0.0004057
-    ##                                                     z value Pr(>|z|)    
-    ## (Intercept)                                        -163.027  < 2e-16 ***
-    ## log(total_seeds)                                    384.193  < 2e-16 ***
-    ## maternal_trees                                       26.065  < 2e-16 ***
-    ## donor_typeall_same                                   41.732  < 2e-16 ***
-    ## donor_typeskewed                                     71.953  < 2e-16 ***
-    ## log(total_seeds):maternal_trees                     -22.653  < 2e-16 ***
-    ## log(total_seeds):donor_typeall_same                -273.024  < 2e-16 ***
-    ## log(total_seeds):donor_typeskewed                  -203.253  < 2e-16 ***
-    ## maternal_trees:donor_typeall_same                    51.184  < 2e-16 ***
-    ## maternal_trees:donor_typeskewed                      10.047  < 2e-16 ***
-    ## log(total_seeds):maternal_trees:donor_typeall_same   -4.231 2.33e-05 ***
-    ## log(total_seeds):maternal_trees:donor_typeskewed     17.348  < 2e-16 ***
+    ## (Intercept)                                         4.587e-01  5.168e-03
+    ## log(total_seeds)                                    7.697e-02  8.998e-04
+    ## maternal_trees                                      4.689e-03  5.205e-04
+    ## donor_typeall_same                                 -1.619e-01  7.309e-03
+    ## donor_typeskewed                                   -1.047e-01  7.309e-03
+    ## log(total_seeds):maternal_trees                    -7.531e-04  8.954e-05
+    ## log(total_seeds):donor_typeall_same                -7.145e-02  1.273e-03
+    ## log(total_seeds):donor_typeskewed                  -2.583e-02  1.273e-03
+    ## maternal_trees:donor_typeall_same                   1.440e-02  7.361e-04
+    ## maternal_trees:donor_typeskewed                     7.523e-03  7.361e-04
+    ## log(total_seeds):maternal_trees:donor_typeall_same -5.627e-04  1.266e-04
+    ## log(total_seeds):maternal_trees:donor_typeskewed   -3.944e-04  1.266e-04
+    ##                                                    t value Pr(>|t|)    
+    ## (Intercept)                                         88.750  < 2e-16 ***
+    ## log(total_seeds)                                    85.539  < 2e-16 ***
+    ## maternal_trees                                       9.008  < 2e-16 ***
+    ## donor_typeall_same                                 -22.150  < 2e-16 ***
+    ## donor_typeskewed                                   -14.327  < 2e-16 ***
+    ## log(total_seeds):maternal_trees                     -8.411  < 2e-16 ***
+    ## log(total_seeds):donor_typeall_same                -56.145  < 2e-16 ***
+    ## log(total_seeds):donor_typeskewed                  -20.299  < 2e-16 ***
+    ## maternal_trees:donor_typeall_same                   19.560  < 2e-16 ***
+    ## maternal_trees:donor_typeskewed                     10.220  < 2e-16 ***
+    ## log(total_seeds):maternal_trees:donor_typeall_same  -4.443 8.87e-06 ***
+    ## log(total_seeds):maternal_trees:donor_typeskewed    -3.115  0.00184 ** 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## (Dispersion parameter for binomial family taken to be 1)
+    ## (Dispersion parameter for gaussian family taken to be 2.047454)
     ## 
-    ##     Null deviance: 10031191  on 140249  degrees of freedom
-    ## Residual deviance:   872445  on 140238  degrees of freedom
-    ## AIC: 1612659
+    ##     Null deviance: 2145942  on 140249  degrees of freedom
+    ## Residual deviance:  287131  on 140238  degrees of freedom
+    ## AIC: -235827
     ## 
-    ## Number of Fisher Scoring iterations: 6
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 #Creating a new dataframe of values to base predictions on 
@@ -131,6 +145,6 @@ ggplot(data=preds) +
     xlab("Total seeds sampled")
 ```
 
-    ## Warning: Removed 5517 row(s) containing missing values (geom_path).
+    ## Warning: Removed 1000 row(s) containing missing values (geom_path).
 
 ![](transformed_model_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
