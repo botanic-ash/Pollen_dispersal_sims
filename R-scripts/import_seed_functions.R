@@ -67,10 +67,8 @@ sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_polle
       for(y in 1:(num_seeds_to_sample[x])) {
         #####################
         # #testing
-        #   print("Current tree:")
-        #   print(x)
-        #   print("Number seed:")
-        #   print(y)
+        #  print(paste("Current tree: ", x))
+        #  print(paste("Number seed: ", y))
         #####################
         #choose father based on probability vector 
         if(length(fathers)>1){

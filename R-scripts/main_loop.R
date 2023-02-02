@@ -25,7 +25,7 @@ source("R-scripts/import_seed_functions.R")
 source("R-scripts/arp2gen_edit.R")
 
 #Defining this because arp2gen didn't want to use relative filepaths 
-mydir = "C:/Users/kayle/OneDrive/Documents/Pollen_dispersal_sims/Simulations/one_pop_2500/"
+mydir = "C:/Users/kayle/Documents/Pollen_dispersal_sims/Simulations/one_pop_2500/"
 
 #importing and converting arlequin files to genepop files
 import_arp2gen_files(mydir,".arp$")
