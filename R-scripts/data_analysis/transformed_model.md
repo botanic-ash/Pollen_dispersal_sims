@@ -69,8 +69,7 @@ tidy_df$prop_capt = as.numeric(tidy_df$prop_capt)
 tidy_df$total_seeds = as.numeric(tidy_df$total_seeds)
 tidy_df$maternal_trees = as.numeric(tidy_df$maternal_trees)
 #Running the model
-transformed_model = glm(prop_capt ~ log(total_seeds) * maternal_trees * donor_type,
-                          weights=total_seeds, data = tidy_df)
+transformed_model = glm(prop_capt ~ log(total_seeds) * log(maternal_trees) * donor_type, data = tidy_df) #removed weights=total_seeds
 # #Save the model since it takes so long to run
 save(transformed_model, file = "transformed_model.Rdata")
 #Load the model from previously saved run
@@ -81,48 +80,48 @@ summary(transformed_model, digits = 4)
 
     ## 
     ## Call:
-    ## glm(formula = prop_capt ~ log(total_seeds) * maternal_trees * 
-    ##     donor_type, data = tidy_df, weights = total_seeds)
+    ## glm(formula = prop_capt ~ log(total_seeds) * log(maternal_trees) * 
+    ##     donor_type, data = tidy_df)
     ## 
     ## Deviance Residuals: 
-    ##      Min        1Q    Median        3Q       Max  
-    ## -11.6722   -0.7678   -0.0784    0.4258    8.1515  
+    ##       Min         1Q     Median         3Q        Max  
+    ## -0.265841  -0.018967  -0.000248   0.021007   0.150021  
     ## 
     ## Coefficients:
-    ##                                                      Estimate Std. Error
-    ## (Intercept)                                         4.587e-01  5.168e-03
-    ## log(total_seeds)                                    7.697e-02  8.998e-04
-    ## maternal_trees                                      4.689e-03  5.205e-04
-    ## donor_typeall_same                                 -1.619e-01  7.309e-03
-    ## donor_typeskewed                                   -1.047e-01  7.309e-03
-    ## log(total_seeds):maternal_trees                    -7.531e-04  8.954e-05
-    ## log(total_seeds):donor_typeall_same                -7.145e-02  1.273e-03
-    ## log(total_seeds):donor_typeskewed                  -2.583e-02  1.273e-03
-    ## maternal_trees:donor_typeall_same                   1.440e-02  7.361e-04
-    ## maternal_trees:donor_typeskewed                     7.523e-03  7.361e-04
-    ## log(total_seeds):maternal_trees:donor_typeall_same -5.627e-04  1.266e-04
-    ## log(total_seeds):maternal_trees:donor_typeskewed   -3.944e-04  1.266e-04
-    ##                                                    t value Pr(>|t|)    
-    ## (Intercept)                                         88.750  < 2e-16 ***
-    ## log(total_seeds)                                    85.539  < 2e-16 ***
-    ## maternal_trees                                       9.008  < 2e-16 ***
-    ## donor_typeall_same                                 -22.150  < 2e-16 ***
-    ## donor_typeskewed                                   -14.327  < 2e-16 ***
-    ## log(total_seeds):maternal_trees                     -8.411  < 2e-16 ***
-    ## log(total_seeds):donor_typeall_same                -56.145  < 2e-16 ***
-    ## log(total_seeds):donor_typeskewed                  -20.299  < 2e-16 ***
-    ## maternal_trees:donor_typeall_same                   19.560  < 2e-16 ***
-    ## maternal_trees:donor_typeskewed                     10.220  < 2e-16 ***
-    ## log(total_seeds):maternal_trees:donor_typeall_same  -4.443 8.87e-06 ***
-    ## log(total_seeds):maternal_trees:donor_typeskewed    -3.115  0.00184 ** 
+    ##                                                           Estimate Std. Error
+    ## (Intercept)                                              0.2616000  0.0010836
+    ## log(total_seeds)                                         0.1126096  0.0002035
+    ## log(maternal_trees)                                      0.0926990  0.0011406
+    ## donor_typeall_same                                      -0.0251088  0.0015324
+    ## donor_typeskewed                                        -0.0264045  0.0015324
+    ## log(total_seeds):log(maternal_trees)                    -0.0159334  0.0002116
+    ## log(total_seeds):donor_typeall_same                     -0.1091952  0.0002879
+    ## log(total_seeds):donor_typeskewed                       -0.0470822  0.0002879
+    ## log(maternal_trees):donor_typeall_same                   0.0905537  0.0016130
+    ## log(maternal_trees):donor_typeskewed                     0.0489686  0.0016130
+    ## log(total_seeds):log(maternal_trees):donor_typeall_same  0.0168630  0.0002993
+    ## log(total_seeds):log(maternal_trees):donor_typeskewed    0.0083232  0.0002993
+    ##                                                         t value Pr(>|t|)    
+    ## (Intercept)                                              241.42   <2e-16 ***
+    ## log(total_seeds)                                         553.24   <2e-16 ***
+    ## log(maternal_trees)                                       81.27   <2e-16 ***
+    ## donor_typeall_same                                       -16.39   <2e-16 ***
+    ## donor_typeskewed                                         -17.23   <2e-16 ***
+    ## log(total_seeds):log(maternal_trees)                     -75.29   <2e-16 ***
+    ## log(total_seeds):donor_typeall_same                     -379.33   <2e-16 ***
+    ## log(total_seeds):donor_typeskewed                       -163.56   <2e-16 ***
+    ## log(maternal_trees):donor_typeall_same                    56.14   <2e-16 ***
+    ## log(maternal_trees):donor_typeskewed                      30.36   <2e-16 ***
+    ## log(total_seeds):log(maternal_trees):donor_typeall_same   56.34   <2e-16 ***
+    ## log(total_seeds):log(maternal_trees):donor_typeskewed     27.81   <2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## (Dispersion parameter for gaussian family taken to be 2.047454)
+    ## (Dispersion parameter for gaussian family taken to be 0.001212871)
     ## 
-    ##     Null deviance: 2145942  on 140249  degrees of freedom
-    ## Residual deviance:  287131  on 140238  degrees of freedom
-    ## AIC: -235827
+    ##     Null deviance: 8097.39  on 140249  degrees of freedom
+    ## Residual deviance:  170.09  on 140238  degrees of freedom
+    ## AIC: -543720
     ## 
     ## Number of Fisher Scoring iterations: 2
 
@@ -145,6 +144,6 @@ ggplot(data=preds) +
     xlab("Total seeds sampled")
 ```
 
-    ## Warning: Removed 1000 row(s) containing missing values (geom_path).
+    ## Warning: Removed 961 row(s) containing missing values (geom_path).
 
 ![](transformed_model_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
