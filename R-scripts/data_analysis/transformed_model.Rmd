@@ -23,7 +23,7 @@ tidy_df$prop_capt = as.numeric(tidy_df$prop_capt)
 tidy_df$total_seeds = as.numeric(tidy_df$total_seeds)
 tidy_df$maternal_trees = as.numeric(tidy_df$maternal_trees)
 #Running the model
-transformed_model = glm(prop_capt ~ log(total_seeds) * maternal_trees * donor_type, data = tidy_df) #removed weights=total_seeds
+transformed_model = glm(prop_capt ~ log(total_seeds) * log(maternal_trees) * donor_type, data = tidy_df) #removed weights=total_seeds
 # #Save the model since it takes so long to run
 save(transformed_model, file = "transformed_model.Rdata")
 #Load the model from previously saved run
