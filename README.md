@@ -1,6 +1,8 @@
-# Pollen_dispersal_sims
-Project repository for complex pollen dispersal/mating using Simcoal 2
-In collaboration by Kaylee Rosenberger, Sean Hoban, and Emily Schumacher 
+# Modified Pollen_dispersal_sims
+A project repository by Ash Hamilton for estimating error rate and paretage from offspring data
+
+This repo is forked from Kaylee Rosenberger; it uses her sim2coal data and code written by her to generate offpsring from that data. 
+
 
 #### Overview
 Simulations (such as those done in the Simcoal software) have been used to test seed sampling strategies used to inform botanic gardens and arboreta. These informed sampling strategies are one way of ensuring that a genetically diverse and representative sample has been collected, to be conserved for future use in restoration efforts for example. However, the simulation software Simcoal models a simplified version of mating and pollen dispersal within the population. For example, any tree in the population has equal opportunity to donate pollen to any other tree in the population. In reality, for many species, the trees closest to another will donate the majority of the pollen. Furthermore, previous seed sampling strategies tested by simulations have assumed that one seed be sampled from one maternal tree--but in reality, collectors will sample many seeds from a given tree if they are available. While it has been shown that sampling as many unique maternal trees as possible will provide the most genetically diverse collection, this is often not feasible or realistic. We aim to quanitfy the difference in genetic diversity captured using a combination of different pollen dispersal patterns and sampling techniques. 
