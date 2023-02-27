@@ -4,7 +4,7 @@
 ##################################################################################
 #Librarys
 library(adegenet)
-library(diveRsity) #do I need this?
+#library(diveRsity) #do I need this?
 library(poppr)
 library(tidyr)
 library(dplyr)
@@ -15,6 +15,9 @@ setwd("/Users/Ashley/Desktop/grad_school/2023_Winter/fund_comp_bio/final_project
 mydir = "/Users/Ashley/Desktop/grad_school/2023_Winter/fund_comp_bio/final_project/Pollen_dispersal_sims/Simulations/one_pop_2500/"
 
 ####creating important functions####
+
+#create a function that is the opposite of %in%
+`%notin%` <- Negate(`%in%`)
 
 #not sure what this does but I think I need it 
 arp2gen<- function (infile)
@@ -291,31 +294,364 @@ set.seed(2023)
 #output dfs are child, mother, father where row corresponds to child
 simple_data <- sample_seed(genetic_data_10_loci, num_trees_to_sample = num_trees_to_sample, num_seeds_to_sample = num_seeds_to_sample, num_pollen_donors = num_pollen_donors, pollen_probability = pollen_probability) 
 
-#save(simple_data, file="../../R-scripts/Rdata/simple_data.Rdata")
+getwd()
+save(simple_data, file="../../R-scripts/Rdata/simple_data.Rdata")
 
 #######################################################
 #all code below written by Ash Hamilton
 
 #makes sure I have the dataset everytime I reload this script
-simple_data <- load(file="../../R-scripts/Rdata/simple_data.Rdata")
+getwd()
+load(file="../../R-scripts/Rdata/simple_data.Rdata")
 
 children_data <- simple_data[[1]] #making child dataset its own object
 mothers <- simple_data[[2]] #making mother dataset its own object
 fathers <- simple_data[[3]] #making father dataset its own object
 
-children_data$mom_ID <- mothers[,1] #adding maternal IDs to child data for parnetage assignment
+children_data$mom_ID <- mothers[,1] #adding maternal IDs to child data for parentage assignment
 children_data$dad_ID <- fathers[,1] #adding paternal IDs to child data so I can test parentage assignment
+children_data$child_ID <- seq.int(nrow(children_data))
 
 #creating a dataset that contains all of the parents all mixed up, I feel this is likely to rep the data, maybe should set something to make sure no mom is also a dad....
 parents <- c(unique(children_data$mom_ID), unique(children_data$dad_ID))
-parental_data <- subset(genetic_data_10_loci, Ind %in% parents)
+parental_data <- subset(genetic_data_10_loci, Ind %in% parents)[, -2]
+
+
+dad_data <- unique(fathers)
+
 
 #now I have a children df and a parental df with all the loci! woot!
 
 #####making the model####
 
 
+### Calculating log likelihood of each possible being the father of each known mother-offspring pair
+num_loci<- 10
+
+ll_D_given_OM <- matrix(nrow = nrow(dad_data), ncol = nrow(children_data), 
+                        dimnames = list( c(dad_data$Ind), c(paste0(children_data$mom_ID, "-", children_data$child_ID))))
+
+
+pr_one_D_given_OM_at_each_locus <- matrix(nrow = num_loci, ncol = nrow(children_data), 
+                                      dimnames = list(seq(1:num_loci),c(paste0(children_data$mom_ID, "-", children_data$child_ID))))
+
+each_D_pr_one_D_given_OM_at_each_locus <- list(pr_one_D_given_OM_at_each_locus, pr_one_D_given_OM_at_each_locus, pr_one_D_given_OM_at_each_locus)
+
+
+for(child in 1:nrow(children_data)){
+    
+all_child_loci <- children_data[child, -c(21:23)] #Pulling a single child and dropping the various IDs so just locus data remains, unsure that I necessarily need to do this??
+all_mom_loci<- mothers[child,-1] #Pulling the mother corresponds to the child pulled and dropping the ID so just locus data remains
+
+    for(dad in 1:nrow(dad_data)){
+    all_dad_loci <- dad_data[dad,-1] #Pulling a single father and dropping the ID and pop columns so just locus data remains
+    
+    pr_D_given_OM_at_each_locus <- rep(0, num_loci) # Making a vector to hold the prob of this dad for this mother off pair at each locus
+    print(paste0(children_data$mom_ID[child], "-", children_data$child_ID[child]))
+    
+        for(locus in 1:num_loci){
+            
+            # Pulling both alleles at a single locus from the mom, child, and dad
+            mom_alleles <- all_mom_loci[, c(2*locus -1, 2*locus)]
+            child_alleles <- all_child_loci[, c(2*locus -1, 2*locus)]
+            dad_alleles <- all_dad_loci[, c(2*locus -1, 2*locus)]
+            
+            
+            # Making a punnet square from the known mother and the potential father
+            
+            possible_children <- matrix(0, nrow = 4, ncol = 2) # Making my punnet square matrix of possible children for the current mother and father
+            
+            k <- 1  # Start a ticker so the child genotypes go in the right row of the matrix
+            for(i in mom_alleles[1,]){
+                for(j in dad_alleles[1,]){
+                    possible_children[k,1] <- i # Put allele from mom in col 1, probably could do this seperate from the dads and just overwrite the second column over each dad.. would be faster at least
+                    possible_children[k,2] <- j # Put allele from dad in col 2
+                    k <- k+1
+                }
+            }
+        
+            allele_order_1 <- child_alleles # Getting the allele order from the child
+            allele_order_2 <- child_alleles[2:1] # Reversing the allele order from the child
+            
+            real_children <- possible_children[,1] == allele_order_1[,1] & possible_children[,2] == allele_order_1[,2] # Creating a Boolean vector of 4 True/False's that will give True only if both the real childs alleles match the ones in possible_children 
+            real_children_2 <- possible_children[,1] == allele_order_2[,1] & possible_children[,2] == allele_order_2[,2] # Creating a second Boolean vector of 4 True/False's that will give True only if both the real childs alleles in reverse order match the ones in possible_children 
+            any_real_child <- real_children + real_children_2 # Returns number of matches per parental allele combo regardless of order in child
+            any_real_child[any_real_child == 2] <- 1 # Overwrites any 2s (from homozygotes) with 1s 
+            any_real_child_probs <- sum(any_real_child)*.25 # Sum the number of matches and multiply by .25 which is the prob of any of the 4 possible children in the punnet sqaure being made  
+            
+            pr_D_given_OM_at_each_locus[locus] <- any_real_child_probs # Saving the prob of that father at each locus 
+        }
+        
+        each_D_pr_one_D_given_OM_at_each_locus[[dad]][,child] <- pr_D_given_OM_at_each_locus # Saving each of the probabilities at each locus to see if I can ID where the issue is casuing the returning of 0's even when a child literally has to come from that dad-mom-combo
+        
+        
+        if(sum(pr_D_given_OM_at_each_locus == 0) > 1){ # Technically if any loci return a 0, the dad isn't a valid option so ll should be 0 BUT THIS WILL CHANGE WITH ERROR!!!
+            ll_D_given_OM[dad, child] <- 0
+        }
+        else{
+            ll_D_given_OM[dad, child] <- sum(log(pr_D_given_OM_at_each_locus)) # Calculating the log likelihoods of each dad by multiplying probabilities across loci, with enough loci will only leave a single father
+        }
+    }
+}
+
+###Next incorporate probability of paternal ind with allele freqs from the population
+#It seems to me IBD is only really used when other parent is unknown, because in this instance I know that 1 of the alleles is from the mother and not randomly from the population, it seems to me that scaling the likelihood of parentage using population level allele frequencies can be done with just the addition of the frequency of the potential paternal allele (if it can be either paternal allele then .5 * freq allele + 5 * freq allele)
+#need to ask Matthias about this, 
+
+#there only seems to be options where probabilities assume one parent is known and both are sampled or both are unknown and only one is sampled
+
+#I think where I multiply by 1 or 0 depending on which child is present is what the multinomial does in the Neff 2001 paper
 
 
 
 
+###Last incorporate probability of paternal ind with error 
+
+error_2_est = .1
+error_1_est = .05
+
+#rates of errors
+error_2 = error_2_est
+error_1 = error_1_est
+e_2 = error_2 / (1 + error_2)
+e_1 = error_1 / (1 + error_1)
+
+
+# Function for obtaining allele frequencies at each locus
+# Input: Desired locus number for which you will obtain allele frequency data
+# Output: A list-   Element 1) vector of allele frequencies at that locus
+#                   Element 2) matrix with 2 rows, row 1= allele 
+get_alleles_and_freqs <- function(locus){
+    
+    # Pulling all alleles at a single locus from all parents in the population
+    all_alleles <- sort(unique(c(parental_data[, c(2*locus)], parental_data[, 2*locus + 1])))
+    
+    # Getting the frequency of each allele, I think this should be input somewhere???? currently just going to make everything 1/k 
+    allele_freqs <- matrix(c(all_alleles, rep(1/length(all_alleles), length(all_alleles))), ncol = length(all_alleles), nrow = 2, byrow = T)
+    return(list(all_alleles,allele_freqs))
+}
+
+
+# Function that takes a vector containing the two alleles of the true genotype and a vector of the two alleles of the  observed genotype and outputs the probability of observing the oberved type given the true type
+calc_true_geno_prob <- function(ind_geno, true_geno, allele_freqs){
+    #browser()
+    # Setting the Kronecker delta-variable
+    if(true_geno[1] == true_geno[2]){  
+        delta_xw <- 1 # If observed genotype = homo, delta_uv = 1
+    } else {
+        delta_xw <- 0 # If observed genotype = het, delta_uv = 0
+    }
+    
+    # Calculate the frequency of the true genotype, will need to be multiplied by probability of obs geno given true geno
+    true_geno_freq <- (2 - delta_xw) * as.numeric(allele_freqs[2, c(allele_freqs[1,] == true_geno[1])]) * as.numeric(allele_freqs[2, c(allele_freqs[1,] == true_geno[2])])
+    
+    # If true geno is a homozygote
+    if(true_geno[1] == true_geno[2]){ 
+        
+        # If mom geno is the same geno as the true geno
+        if(ind_geno[1] == ind_geno[2] & ind_geno[1] == ind_geno[1]){
+            true_geno_prob = (1 - error_2)^2
+            
+            # If mom geno has a single allele that is the same as the true geno
+        } else if(ind_geno[1] == true_geno[1] | ind_geno[2] == true_geno[1]){
+            true_geno_prob = 2*e_2*(1 - error_2)
+            
+            # If mom geno has no alleles that are the same as the true geno
+        } else { 
+            true_geno_prob = (2 - delta_uv) * e_2^2 
+        }
+        
+        # If true geno is a heterozygote    
+    } else if(true_geno[1] != true_geno[2]){ 
+        
+        # If mom geno is the same geno as the true geno
+        if(all(ind_geno == true_geno) | all(ind_geno[2:1] == true_geno)){
+            true_geno_prob = (1 - error_2)^2 + e_2^2 - (2*e_1*(1 - error_2- e_2)^2)
+            
+            # If mom geno is homozygous and matches one of the alleles in the true geno    
+        } else if(ind_geno[1] == ind_geno[2] & ind_geno[1] %in% true_geno){
+            true_geno_prob = (e_2*(1 - error_2)) +  (e_1*(1 - error_2- e_2)^2)
+            
+            # If neither allele of the mom geno matches either of the alleles in the true geno  
+        } else if(ind_geno[1] %notin% true_geno & ind_geno[2] %notin% true_geno){
+            true_geno_prob = (2 - delta_uv) * e_2^2 
+            
+            # Otherwise
+        } else {
+            true_geno_prob = e_2*(1 - error_2- e_2)
+        }
+    }
+    
+    true_geno_prob = true_geno_prob * true_geno_freq # Probability needs to be scaled by the frequency of that genotype
+    
+    return(true_geno_prob)
+}
+
+
+prob_hidden_genos <- function(locus, ind_ID) {
+    #browser()
+    if(ind_ID %in% parental_data$Ind){
+        all_ind_loci<- parental_data[parental_data$Ind == ind_ID,] #Pulling the parent ind that corresponds to the ind ID  
+        # set individuals genotype
+        ind_geno <- all_ind_loci[, c(2*locus, 2*locus + 1)]
+    } else {
+        all_ind_loci<- children_data[children_data$child_ID == ind_ID,] #Pulling the child ind corresponds to the ind ID
+        # set individuals genotype
+        ind_geno <- all_ind_loci[, c(2*locus - 1, 2*locus)]
+        }
+
+    # Pulling all alleles at a single locus from all parents in the population
+    all_alleles <- get_alleles_and_freqs(locus = locus)
+    
+    # Making list of all possible genotypes
+    all_hets <- combn(all_alleles[[1]], 2) # All heterozygotous genotypes 
+    all_homos <- rbind(all_alleles[[1]], all_alleles[[1]]) # All homozygotous genotypes
+    all_genos <- cbind(all_hets, all_homos) # All genotypes
+    
+    # Getting the frequency of each allele, I think this should be input somewhere....???? currently just going to make everything 1/k 
+    allele_freqs <- all_alleles[[2]]
+
+    # Setting the Kronecker delta-variable
+    if(ind_geno[1] == ind_geno[2]){  
+        delta_uv <- 1 # If observed genotype = homo, delta_uv = 1
+    } else {
+        delta_uv <- 0 # If observed genotype = het, delta_uv = 0
+    }
+    
+    # Make a vector which will hold the probabilities of each mother having the true genotype
+    ind_true_geno_probs <- rep(0, ncol(all_genos)) # Correlates to column of all_genos
+    
+    # Iterate through all possible "true" genotypes
+    for(geno in 1:ncol(all_genos)){
+        true_geno <- all_genos[,geno] # Set current "true genotype"
+        
+        ind_true_geno_probs[geno] <- calc_true_geno_prob(ind_geno = ind_geno, true_geno = true_geno, allele_freqs = allele_freqs) #There is some issue with this when it is called on locus 2 after looping.... unsure what it is
+            
+        } # Close the for loop for all possible genotypes
+    
+    ind_true_geno_probs <- matrix(c(ind_true_geno_probs), nrow = 1) 
+    colnames(ind_true_geno_probs) <- paste0(all_genos[1,], "-", all_genos[2,]) # Make the column name the genotypes
+    
+    #ind_all_geno_all_loci_probs[[locus]] <- ind_true_geno_probs # Each loci = it's own element of the list
+    
+    return(ind_true_geno_probs)
+}
+
+
+calc_pr_child <- function(locus, mom_ID, dad_ID, child_ID){
+    #browser()
+    all_child_loci <- children_data[child_ID, -c(21:23)] # Pulling the single child and dropping the various IDs so just locus data remains
+    
+    # Pulling both alleles at a single locus from the ind
+    child_geno <- all_child_loci[, c(2*locus - 1, 2*locus)] # Ind geno based on ind name
+    
+    allele_freqs <- get_alleles_and_freqs(locus)[[2]] 
+    
+    ind_geno <- NA
+    prob_mom <- prob_hidden_genos(locus = locus, ind_ID = mom_ID) #THIS IS THE CALL THAT ISN'T WORKING
+    
+    ind_geno <- NA
+    prob_dad <- prob_hidden_genos(locus = locus, ind_ID = dad_ID)
+    
+    c(colnames(prob_mom), colnames(prob_dad))
+    
+    # Making list of all true genotype parental pairings, true for all inds at each loci
+    all_diff <- combn(colnames(prob_mom), 2) # All diff genotype pairings
+    all_same <- rbind(colnames(prob_mom), colnames(prob_dad)) # All same genotype pairings
+    all_pairings <- cbind(all_diff, all_same) # All genotype pairings
+    
+    ll_child_given_any_mom_dad <- vector(length = ncol(all_pairings))
+    ll_child_given_any_dad_mom <- vector(length = ncol(all_pairings))
+    
+    children_of_pairing <- list()
+    
+    for(pairing in 1:ncol(all_pairings)){
+        # Making a punnet square from the each possible mother and the father
+        
+        possible_children <- matrix(0, nrow = 4, ncol = 2) # Making my punnet square matrix of possible children for the current mother and father
+        
+        k <- 1  # Start a ticker so the child genotypes go in the right row of the matrix
+        
+        # Getting the unique alleles from each parent into vectors again
+        parent1 <- unlist(strsplit(all_pairings[1,pairing], "-"))
+        parent2 <- unlist(strsplit(all_pairings[2,pairing], "-"))
+        
+        
+        for(i in parent1){
+            for(j in parent2){
+                possible_children[k,1] <- i # Put allele from parent 1 in col 1, 
+                possible_children[k,2] <- j # Put allele from parent 2 in col 2, 
+                k <- k+1
+            }
+        }
+        
+        # Each possible parental pairing has the possible children assigned
+        children_of_pairing[[pairing]] <- possible_children
+        
+        # Making vector to hold all probabilities of observing the child genotype given the two parental genotypes
+        obs_geno_prob <- rep(0, 4)
+        
+        
+        for(real_geno in 1:nrow(possible_children)){
+            
+            obs_geno_prob[real_geno] <- calc_true_geno_prob(ind_geno = child_geno, true_geno = possible_children[real_geno,], allele_freqs = allele_freqs)
+            
+        }
+        
+        pr_child_given_real_geno <- sum(obs_geno_prob[real_geno] * (1/4)) # Prob observing the real geno given all possible true genos from the designated parental pairing
+        
+        # Prob observing this child given obs mom given true mom in spot 1 of the pairing and obs dad given true dad in spot 2 of the pairing
+        ll_child_given_mom_dad <- sum(log(prob_mom[colnames(prob_mom) == all_pairings[1,pairing]]), log(prob_dad[colnames(prob_dad) == all_pairings[2,pairing]]), log(pr_child_given_real_geno))
+        
+        # Prob observing this child given obs mom given true mom in spot 2 of the pairing and obs dad given true dad in spot 1 of the pairing
+        ll_child_given_dad_mom <- sum(log(prob_mom[colnames(prob_mom) == all_pairings[2,pairing]]), log(prob_dad[colnames(prob_dad) == all_pairings[1,pairing]]), log(pr_child_given_real_geno))
+        
+        ll_child_given_any_mom_dad[pairing] <- ll_child_given_mom_dad
+        
+        ll_child_given_any_mom_dad[pairing] <- ll_child_given_dad_mom
+    }
+    
+    total_ll_child_given_mom_dad <- log(sum(exp(ll_child_given_any_mom_dad)))
+    total_ll_child_given_dad_mom <- log(sum(exp(ll_child_given_any_mom_dad)))
+    total_ll_child_given_parents <- log(sum(exp(total_ll_child_given_dad_mom), exp(total_ll_child_given_mom_dad)))
+
+    return(total_ll_child_given_parents)
+}
+
+
+
+num_loci<- 10
+
+mom_ID = "1909"
+dad_ID = "2479"
+locus = 1
+child_ID = "1"
+
+ll_O_given_one_DM <- matrix(nrow = nrow(dad_data), ncol = nrow(children_data), 
+                        dimnames = list( c(dad_data$Ind), c(paste0(children_data$mom_ID, "-", children_data$child_ID))))
+
+#looping above functions across unique child - dad pairings to calc prob obs off|known mom, putative dad with error incorporated
+for(child in 1:nrow(children_data)){
+    child_ID <- children_data$child_ID[child] # Pulling the child ID corresponds to the child
+    mom_ID <- children_data$mom_ID[child] # Pulling the mother corresponds to the child
+    
+    for(dad in 1:nrow(dad_data)){
+        dad_ID <- dad_data$Ind[dad] # Pulling a single father and dropping the ID and pop columns so just locus data remains
+        ll_O_given_DM_at_each_locus <- rep(0, num_loci) # Making a vector to hold the prob of this dad for specific mother off pair at each locus
+        
+        for(locus in 1:num_loci){
+            ll_O_given_DM_at_each_locus[locus] <- calc_pr_child(locus = locus, mom_ID = mom_ID, dad_ID = dad_ID, child_ID = child_ID) # Saving the prob of that child given the mother and father at each locus 
+        }
+        ll_O_given_one_DM[dad, child] <- sum(ll_O_given_DM_at_each_locus)
+    }
+}
+
+#corresponds to Neffss t matrix
+t(ll_O_given_one_DM)
+
+    
+#calculate exclusion probability
+
+
+#take result of MH updates and use it to obtain most likely dad | data 
+    
