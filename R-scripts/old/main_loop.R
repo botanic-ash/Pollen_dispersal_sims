@@ -9,10 +9,12 @@ library(poppr)
 library(tidyr)
 library(dplyr)
 
-setwd("/Users/Ashley/Desktop/grad_school/2023_Winter/fund_comp_bio/final_project/Pollen_dispersal_sims")
+#setwd("/Users/Ashley/Desktop/grad_school/2023_Winter/fund_comp_bio/final_project/Pollen_dispersal_sims")
 
 #Defining this because arp2gen didn't want to use relative filepaths, using 1 parental pop with 2500 inds
 mydir = "/Users/Ashley/Desktop/grad_school/2023_Winter/fund_comp_bio/final_project/Pollen_dispersal_sims/Simulations/one_pop_2500/"
+
+mydir = "./one_pop_2500/"
 
 ####creating important functions####
 
@@ -324,8 +326,6 @@ parental_data <- rbind(unique(mothers), unique(fathers)) # I think this differs 
 
 # Now I have a children df and a parental df with all the loci! woot!
 
-# used previously but remaking now 
-dad_data <- unique(fathers)
 #####making the model####
 
 
@@ -781,6 +781,9 @@ prob_hidden_genos <- function(locus, ind_ID, error_1, error_2) {
     ind_true_geno_probs <- matrix(c(ind_true_geno_probs), nrow = 1) 
     colnames(ind_true_geno_probs) <- paste0(all_genos[1,], "-", all_genos[2,]) # Make the column name the genotypes
     
+    #outer function might be faster here
+    
+    
     #ind_all_geno_all_loci_probs[[locus]] <- ind_true_geno_probs # Each loci = it's own element of the list
     
     return(ind_true_geno_probs)
@@ -800,8 +803,6 @@ calc_pr_child <- function(locus, mom_ID, dad_ID, child_ID, error_1, error_2){
     
     ind_geno <- NA
     prob_dad <- prob_hidden_genos(locus = locus, ind_ID = dad_ID, error_1 = error_1, error_2 = error_2)
-    
-    c(colnames(prob_mom), colnames(prob_dad))
     
     # Making list of all true genotype parental pairings, true for all inds at each loci
     all_diff <- combn(colnames(prob_mom), 2) # All diff genotype pairings
@@ -846,7 +847,7 @@ calc_pr_child <- function(locus, mom_ID, dad_ID, child_ID, error_1, error_2){
             
         }
         
-        pr_child_given_real_geno <- sum(obs_geno_prob[real_geno] * (1/4)) # Prob observing the real geno given all possible true genos from the designated parental pairing
+        pr_child_given_real_geno <- sum(obs_geno_prob * (1/4)) # Prob observing the real geno given all possible true genos from the designated parental pairing
         
         # Prob observing this child given obs mom given true mom in spot 1 of the pairing and obs dad given true dad in spot 2 of the pairing
         ll_child_given_mom_dad <- sum(log(prob_mom[colnames(prob_mom) == all_pairings[1,pairing]]), log(prob_dad[colnames(prob_dad) == all_pairings[2,pairing]]), log(pr_child_given_real_geno))
@@ -856,11 +857,11 @@ calc_pr_child <- function(locus, mom_ID, dad_ID, child_ID, error_1, error_2){
         
         ll_child_given_any_mom_dad[pairing] <- ll_child_given_mom_dad
         
-        ll_child_given_any_mom_dad[pairing] <- ll_child_given_dad_mom
+        ll_child_given_any_dad_mom[pairing] <- ll_child_given_dad_mom
     }
     
     total_ll_child_given_mom_dad <- log(sum(exp(ll_child_given_any_mom_dad)))
-    total_ll_child_given_dad_mom <- log(sum(exp(ll_child_given_any_mom_dad)))
+    total_ll_child_given_dad_mom <- log(sum(exp(ll_child_given_any_dad_mom)))
     total_ll_child_given_parents <- log(sum(exp(total_ll_child_given_dad_mom), exp(total_ll_child_given_mom_dad)))
     
     return(total_ll_child_given_parents)
@@ -949,10 +950,14 @@ error_sampler = function(children_data, parental_data, niter, error_startvals, p
 
 
 # Running the Gibbs sampler
-first_try <- error_sampler(children_data = children_data, parental_data = parental_data, niter = 10, error_startvals = c(.02,.05), proposalsd = .05) # This took a little over a half hour to run just the 10 iterations
+first_big_try <- error_sampler(children_data = children_data_error, parental_data = parental_data_error, niter = 500, error_startvals = c(.02,.05), proposalsd = .02) # Attempting 500 iterations, should take about 24 hours to run
 
-hist(first_try[1,],prob=T)
-hist(first_try[2,],prob=T)
+
+
+
+
+hist(first_big_try[1,],prob=T)
+hist(first_big_try[2,],prob=T)
 
 
 # Taking the result of MH updates and using it to obtain most likely dad | data 
@@ -969,8 +974,6 @@ proportions(table(dad_ID == children_data$dad_ID)) # Getting proportion of corre
 ####Simulating error and adding it to the simulated reads####
 # Error class 1 = allelic dropout aka failure to amplify one of 2 alleles, worse w/ lower DNA quality, only affects hets by making them into false homos
 # Error class 2 = stochastic errors excluding allelic dropout, including false alleles, miscalling, and contaminant DNA
-children_data_true <- children_data
-parental_data_true <- parental_data
 
 simulating_error <- function(data_for_editing, type1_rate, type2_rate, parental_data = NA){
     if(missing(parental_data)){

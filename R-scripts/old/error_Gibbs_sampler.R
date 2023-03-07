@@ -533,7 +533,9 @@ log_prior = function(p){
 }
 
 
-error_sampler = function(children_data, parental_data, niter, error_startvals, proposalsd){
+error_sampler = function(children_data, parental_data, niter, error_startvals, proposalsd, testing){
+    #browser()
+
     error = matrix(0,ncol = niter, nrow = 2)
     error[1,1] = error_startvals[1]
     error[2,1] = error_startvals[2]
@@ -541,24 +543,57 @@ error_sampler = function(children_data, parental_data, niter, error_startvals, p
         current_error1 = error[1, i-1]
         current_error2 = error[2, i-1]
         new_error1 = current_error1 + rnorm(1,0,proposalsd) #this isn't good because error can't be negative... to make symmetric call the rnorm and then write an if else that asks if the resulting new_error would negative, if yes then subtract the value from it to get back above 1?
-        A = exp(log_prior(new_error1) + get_ll(children_data = children_data, parental_data = parental_data, error_1 = new_error1, error_2 = current_error2)[[1]] - log_prior(current_error1) - get_ll(children_data = children_data, parental_data = parental_data, error_1 = current_error1, error_2 = current_error2)[[1]]) 
-        if(runif(1)<A){ #the bigger the A value is, the more likely you get to move to the new p value
-            error[1,i] = new_error1       # accept move with probability min(1,A)
-        } else {
-            error[1,i] = current_error1        # otherwise "reject" move, and stay where we are
+        # If not in testing mode, run get_ll function to obtain real likliehoods
+        if(testing == F | missing(testing)){
+            A = exp(log_prior(new_error1) + get_ll(children_data = children_data, parental_data = parental_data, error_1 = new_error1, error_2 = current_error2)[[1]] - log_prior(current_error1) - get_ll(children_data = children_data, parental_data = parental_data, error_1 = current_error1, error_2 = current_error2)[[1]]) 
         }
-        current_error1 = error[1,i] # set the new current error1 that takes into account the last half step  
-        new_error2 = current_error2 + rnorm(1,0,proposalsd) #this isn't good because error can't be negative... to make symmetric call the rnorm and then write an if else that asks if the resulting new_error would negative, if yes then subtract the value from it to get back above 1?
-        A = exp(log_prior(new_error2) + get_ll(children_data = children_data, parental_data = parental_data, error_1 = current_error1, error_2 = new_error2)[[1]] - log_prior(current_error2) - get_ll(children_data = children_data, parental_data = parental_data, error_1 = current_error1, error_2 = current_error2)[[1]]) 
+        # If in testing mode, use a uniform dist'n with no dep on error to obtain likelihoods
+        else(A = exp(log_prior(new_error1) + log(1) - log_prior(current_error1) - log(1)) )
+        
+        
         if(runif(1)<A){ 
-            error[2,i] = new_error2       # accept move with probability min(1,A)
+            error[1,i] = new_error1 # Accept move with probability min(1,A)
         } else {
-            error[2,i] = current_error2        # otherwise "reject" move, and stay where we are
+            error[1,i] = current_error1 # Otherwise "reject" move, and stay where we are
+        }
+        current_error1 = error[1,i] # Set the new current error1 that takes into account the last half step  
+        new_error2 = current_error2 + rnorm(1,0,proposalsd) 
+        
+        # If not in testing mode, run get_ll function to obtain real likliehoods
+        if(testing == F | missing(testing)){
+            A = exp(log_prior(new_error2) + get_ll(children_data = children_data, parental_data = parental_data, error_1 = current_error1, error_2 = new_error2)[[1]] - log_prior(current_error2) - get_ll(children_data = children_data, parental_data = parental_data, error_1 = current_error1, error_2 = current_error2)[[1]])
+        }
+        # If in testing mode, use a uniform dist'n with no dep on error to obtain likelihoods
+        else(A = exp(log_prior(new_error2) + log(1) - log_prior(current_error2) - log(1)) )
+        
+        
+        if(runif(1)<A){ 
+            error[2,i] = new_error2 # Accept move with probability min(1,A)
+        } else {
+            error[2,i] = current_error2 # Otherwise "reject" move, and stay where we are
         }
     }
-    
     return(error)
 }
+
+
+####Testing the Gibbs sampler####
+first_testing_Gibbs_try <- error_sampler(children_data = children_data_sim_error, parental_data = parental_data_sim_error, niter = 100000, error_startvals = c(.35,.05), proposalsd = .05, testing = T)
+
+first_testing_Gibbs_try_noburnins <- first_testing_Gibbs_try[,-c(1:10000)]
+
+# Plotting test of the Gibbs machinery!
+plot(density(first_testing_Gibbs_try_noburnins[1,]), xlim= c(0.0001,1), xlab = "Error value", main = "90000 iters sampled from a uniform tagret dist'n")
+abline(v = mean(first_testing_Gibbs_try_noburnins[1,]), lty = 2)
+lines(density(first_testing_Gibbs_try_noburnins[2,]), add = T, col = "grey")
+abline(v = mean(first_testing_Gibbs_try_noburnins[2,]), lty = 2, col = "grey")
+curve(dunif(x), from = 0, to = 1, add = T, col = "blue")
+abline(v = .5, col = "blue", lty = 2)
+legend("bottomright", 
+       legend = c("Sampler", "Sampler Mean", "Uniform dist'n", "Uniform mean"), 
+       col = c("black", "black", "blue", "blue"), 
+       lty = c(1, 2, 1, 2), 
+       inset = .05)
 
 
 ####Running the Gibbs sampler####
