@@ -6,18 +6,19 @@ library(adegenet)
 library(poppr)
 library(tidyr)
 library(dplyr)
+library(data.table)
 
 setwd("/Users/Ashley/Desktop/grad_school/2023_Winter/fund_comp_bio/final_project/Pollen_dispersal_sims")
 
-#Defining this because arp2gen didn't want to use relative filepaths, using 1 parental pop with 2500 inds
+# Defining this because arp2gen didn't want to use relative file paths, using 1 of the example parental pops with 2500 inds (#42)
 mydir = "/Users/Ashley/Desktop/grad_school/2023_Winter/fund_comp_bio/final_project/Pollen_dispersal_sims/Simulations/only_used_pop/"
 
-####Creating Important Functions####
+####Creating functions for importing initial MSAT data####
 
 # Create a function that is the opposite of %in%
 `%notin%` <- Negate(`%in%`)
 
-
+#A function that converts an arlequin simulation file to a genepop file
 arp2gen<- function (infile){
     flForm <- strsplit(infile, split = "\\.")[[1]]
     if (substr(infile, 1, 2) == "./") {
@@ -130,11 +131,7 @@ arp2gen<- function (infile){
     }
 }
 
-
-
-
-#Defining an import function
-#converts all arlequin simulation files in a folder to genepop files
+#A function that converts all arlequin simulation files in a folder to genepop files
 import_arp2gen_files = function(mypath, mypattern) {
     setwd(mypath) #directory containing files
     temp_list_1 = list.files(mypath, mypattern) #list of files with .arp extension
@@ -143,9 +140,9 @@ import_arp2gen_files = function(mypath, mypattern) {
     temp_list_2
 } 
 
-#creating a function to convert genepop files to genalex files
-#there 2 main steps--first you need to convert genepop files to genind objects
-#then you convert genind objects to genalex files
+#A function that converts genepop files to genalex files in 2 main steps:
+#   first you need to convert genepop files to genind objects
+#   then you convert genind objects to genalex files
 import_gen2genalex_files = function(mypath, mypattern) {
     setwd(mypath) #directory containing files
     temp_list_1 = list.files(mypath, mypattern) #list of all files with .gen extension
@@ -158,8 +155,12 @@ import_gen2genalex_files = function(mypath, mypattern) {
     temp_list_3 #retun
 }
 
-#the function that samples the parental population and generates children WITH NO MUTATION by randomly choosing one of each allele from each parent for all loci
-#output is a list of matrices, the row of each matrix corresponds to information about that child, the 1st matrix is the offspring genotype data, the second is the maternal gentoype, the last is the paternal genotype
+#A function that samples the parental population and generates children:
+#   children generated WITH NO MUTATION by randomly choosing one of each allele from each parent for all loci
+#   output is a list of matrices, the row of each matrix corresponds to genetic information related to that child in the offspring matrix:
+#       the 1st matrix is the offspring genotype data
+#       the 2nd matrix is the maternal genotype
+#       the 3rd matrix is the paternal genotype
 sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_pollen_donors, pollen_probability) {
     #loop over x number of trees collectors are sampling from
     i=1 #simple counter variable to keep track of the current row (individual) 
@@ -228,20 +229,8 @@ sample_seed = function(data, num_trees_to_sample, num_seeds_to_sample, num_polle
     return(list(seeds_sampled, seed_mother_df[,-2], seed_father_df[,-2])) #rows correspond to child number, row 1 = child one, child 1's mom and child 1's dad
 }
 
-
-#importing and converting arlequin files to genepop files
-import_arp2gen_files(mydir,".arp$")
-
-#importing and converting genepop files to genalex
-import_gen2genalex_files(mydir, ".gen$")
-
 ####Loading the already simulated population data####
-num_loci = 20 #number of loci simulated, needed to make a dataframe to save the data, starts with 20 --> gets cut down to 10 later
-
-#defining array to store seeds that collectors have 'sampled'
-#first we need to create column names depending on how many loci are present in simulations
-#then, define the matrix, convert to dataframe, and rename the columns to label the data
-#this dataframe keeps track of the alleles that are captured during sampling
+num_loci = 20 #number of loci simulated, needed to make a data frame to save the data, starts with 20 --> gets cut down to 10 later
 
 # Make a vector of all of the loci names
 loci_names = c()
@@ -250,9 +239,13 @@ for(i in 1:num_loci){
     loci_names = c(loci_names, paste("locus", i, "b", sep=""))
 }
 
-#Results are saved in a 3D array 
+#importing and converting arlequin files to genepop files
+import_arp2gen_files(mydir,".arp$")
+
+#importing and converting genepop files to genalex
+import_gen2genalex_files(mydir, ".gen$")
+
 #list of genalex files for all simulation replicates--genalex files end in .csv
-#these have the simulated genetic data
 genalex_list = list.files(mydir, ".csv$")
 
 #cut off first 2 rows in data frame -- this is the population data, which is not required for our purposes
@@ -261,7 +254,7 @@ genetic_data = read.csv(paste(mydir, genalex_list, sep=""), header=FALSE)[-c(1,2
 #giving the data frame columns new names
 names(genetic_data) = c("Ind", "Pop", loci_names)
 
-#this data frame now contains all of the data of 20 MSAT loci from each of 2500 individuals (in a single population) as simulated from Arlequin
+#this data frame now contains all of the data of 20 MSAT loci from each of 2500 individuals (in a single population) as simulated from SIM2COAL
 genetic_data = genetic_data[-1,] #removing the first row -- repeat of now column headers
 
 #thinning down to only 10 loci for now
@@ -280,7 +273,7 @@ pollen_probability = c(.5, .5)
 set.seed(2023)
 
 #Simulate the offspring and parental dfs, outputs are in a list, each output is a df, each row corresponds to a unique child individual that is located at that row in the child data frame
-#   First object in list is df with all simulated children alleles, 
+#   First object in list is df with all simulated children alleles 
 #   Second object in list is df with all simulated mother alleles
 #   Third object in list is df with all simulated father alleles
 simple_data <- sample_seed(genetic_data_10_loci, num_trees_to_sample = num_trees_to_sample, num_seeds_to_sample = num_seeds_to_sample, num_pollen_donors = num_pollen_donors, pollen_probability = pollen_probability) 
@@ -316,12 +309,17 @@ parental_data <- rbind(unique(mothers), unique(fathers))
 # Error class 2 = stochastic errors excluding allelic dropout, including false alleles, miscalling, and contaminant DNA
 
 simulating_error <- function(data_for_editing, type1_rate, type2_rate, parental_data = NA){
+    #browser()
+    # Set data_for_editing to be the parental data if there is no parental data loaded
     if(missing(parental_data)){
         parental_data <- data_for_editing
     }
     
     # Pulling just the loci from the df
     locus_data <- data_for_editing[,grepl( "locus" , colnames(data_for_editing))]
+    
+    # Getting loci number from data 
+    num_loci <- ncol(locus_data)/2
     
     # Making the new matrix with the same shape as the old matrix
     locus_data_new <- data.frame(matrix(ncol = ncol(locus_data), nrow = nrow(locus_data)))
@@ -396,7 +394,6 @@ children_data_track_errors <- children_data_error[[2]] # For data summarization 
 colSums(children_data_track_errors)
 
 
-
 ####Making the model but faster####
 
 #Have not yet started! Also do want to put helpful little text blocks above all code!! And honestly maybe switch this to an rmd, but that's a later me problem
@@ -440,12 +437,11 @@ calc_true_geno_prob <- function(ind_geno, true_geno, allele_freqs, error_1, erro
     
     # maybe change this to an which %in% with all possible satisfactory conditions listed in the right side of the in, and then have the next thing written based on the in result of the in and have a matrix with corresponding equations in the correct indexed position that can then be evaluated with eval(parse(text = matrix[matched index value from which command])), should run faster
     
-    
     # If true geno is a homozygote
     if(true_geno[1] == true_geno[2]){ 
         
         # If mom geno is the same geno as the true geno
-        if(ind_geno[1] == ind_geno[2] & ind_geno[1] == ind_geno[1]){
+        if(ind_geno[1] == ind_geno[2] & ind_geno[1] == true_geno[1]){
             true_geno_prob = (1 - error_2)^2
             
             # If mom geno has a single allele that is the same as the true geno
@@ -503,111 +499,67 @@ prob_hidden_genos <- function(locus, ind_ID, error_1, error_2) {
     all_homos <- rbind(all_alleles[[1]], all_alleles[[1]]) # All homozygotous genotypes
     all_genos <- cbind(all_hets, all_homos) # All genotypes
     
-    # Getting the frequency of each allele, I think this should be input somewhere....???? currently just going to make everything 1/k 
-    allele_freqs <- all_alleles[[2]]
-    
     # Make a vector which will hold the probabilities of each mother having the true genotype
     ind_true_geno_probs <- rep(0, ncol(all_genos)) # Correlates to column of all_genos
     
-    # Iterate through all possible "true" genotypes
-    for(geno in 1:ncol(all_genos)){
-        true_geno <- all_genos[,geno] # Set current "true genotype"
-        
-        ind_true_geno_probs[geno] <- calc_true_geno_prob(ind_geno = ind_geno, true_geno = true_geno, allele_freqs = allele_freqs, error_1 = error_1, error_2 = error_2)
-        
-    } # Close the for loop for all possible genotypes
+    # Implementing an apply function to call calc_true_geno_prob function, uses columns of all_genos as true_geno argument
+    ind_true_geno_probs <- matrix(apply(all_genos, 2, calc_true_geno_prob, ind_geno = ind_geno, allele_freqs = all_alleles[[2]], error_1 = error_1, error_2 = error_2), nrow = 1)
     
-    ind_true_geno_probs <- matrix(c(ind_true_geno_probs), nrow = 1) 
     colnames(ind_true_geno_probs) <- paste0(all_genos[1,], "-", all_genos[2,]) # Make the column name the genotypes
     
-    #ind_all_geno_all_loci_probs[[locus]] <- ind_true_geno_probs # Each loci = it's own element of the list
     
     return(ind_true_geno_probs)
 }
 
+parent_parent_child_like <- function(pairing, allele_freqs){
+    #browser()
+    # Making a punnet square from the each possible mother and the father
+    
+    # Getting the unique alleles from each parent into vectors again
+    parent1 <- unlist(strsplit(pairing[1], "-"))
+    parent2 <- unlist(strsplit(pairing[2], "-"))
+    
+    # Gets all possible children
+    possible_children <- as.matrix(CJ(parent1, parent2)) #CJ keeps all combos, even those that are not unique (aka homozygotes)
+    
+    # Applying calc_true_geno_prob to each row in possible_children, where each row is used as the true_geno input
+    pr_child_given_real_geno <- sum(apply(possible_children, 1, calc_true_geno_prob, ind_geno = child_geno, allele_freqs = allele_freqs, error_1 = error_1, error_2 = error_2) * .25) # Multiplying output of apply function by .25 and summing these values to get the prob observing the observed child_geno given all possible true_genos from the designated parental pairing
+    
+    # Prob observing this child given obs mom given true mom in spot 1 of the pairing and obs dad given true dad in spot 2 of the pairing
+    ll_child_given_mom_dad <- sum(log(prob_mom[colnames(prob_mom) == pairing[1]]), log(prob_dad[colnames(prob_dad) == pairing[2]]), log(pr_child_given_real_geno))
+    
+    # Prob observing this child given obs mom given true mom in spot 2 of the pairing and obs dad given true dad in spot 1 of the pairing
+    ll_child_given_dad_mom <- sum(log(prob_mom[colnames(prob_mom) == pairing[2]]), log(prob_dad[colnames(prob_dad) == pairing[1]]), log(pr_child_given_real_geno))
+    
+    return(cbind(ll_child_given_mom_dad,ll_child_given_dad_mom))
+}
+
 calc_pr_child <- function(locus, mom_ID, dad_ID, child_ID, error_1, error_2){
     #browser()
-    all_child_loci <- children_data[child_ID, -c(21:23)] # Pulling the single child and dropping the various IDs so just locus data remains
-    
     # Pulling both alleles at a single locus from the ind
-    child_geno <- all_child_loci[, c(2*locus - 1, 2*locus)] # Ind geno based on ind name
+    child_geno <- children_data[child_ID, c(2*locus - 1, 2*locus)] # Ind geno based on ind name at specific locus
     
     allele_freqs <- get_alleles_and_freqs(locus, parental_data = parental_data)[[2]] 
     
-    ind_geno <- NA
     prob_mom <- prob_hidden_genos(locus = locus, ind_ID = mom_ID, error_1 = error_1, error_2 = error_2) 
     
-    ind_geno <- NA
     prob_dad <- prob_hidden_genos(locus = locus, ind_ID = dad_ID, error_1 = error_1, error_2 = error_2)
     
-    c(colnames(prob_mom), colnames(prob_dad))
-    
-    # Making list of all true genotype parental pairings, true for all inds at each loci
+    # Making matrix of all true genotype parental pairings, true for all inds at each loci
     all_diff <- combn(colnames(prob_mom), 2) # All diff genotype pairings
     all_same <- rbind(colnames(prob_mom), colnames(prob_dad)) # All same genotype pairings
     all_pairings <- cbind(all_diff, all_same) # All genotype pairings
     
-    ll_child_given_any_mom_dad <- vector(length = ncol(all_pairings))
-    ll_child_given_any_dad_mom <- vector(length = ncol(all_pairings))
+    total_ll_child <- t(apply(all_pairings, 2, parent_parent_child_like, allele_freqs = allele_freqs)) # Columns rep prob observing the child if 1) mom was parent 1 or 2) dad was parent 1 (done bc no duplicates in the all_pairings list)
     
-    children_of_pairing <- list()
-    
-    for(pairing in 1:ncol(all_pairings)){
-        # Making a punnet square from the each possible mother and the father
-        
-        possible_children <- matrix(0, nrow = 4, ncol = 2) # Making my punnet square matrix of possible children for the current mother and father
-        
-        k <- 1  # Start a ticker so the child genotypes go in the right row of the matrix
-        
-        # Getting the unique alleles from each parent into vectors again
-        parent1 <- unlist(strsplit(all_pairings[1,pairing], "-"))
-        parent2 <- unlist(strsplit(all_pairings[2,pairing], "-"))
-        
-        
-        for(i in parent1){
-            for(j in parent2){
-                possible_children[k,1] <- i # Put allele from parent 1 in col 1, 
-                possible_children[k,2] <- j # Put allele from parent 2 in col 2, 
-                k <- k+1
-            }
-        }
-        
-        # Each possible parental pairing has the possible children assigned
-        children_of_pairing[[pairing]] <- possible_children
-        
-        # Making vector to hold all probabilities of observing the child genotype given the two parental genotypes
-        obs_geno_prob <- rep(0, 4)
-        
-        
-        for(real_geno in 1:nrow(possible_children)){
-            
-            obs_geno_prob[real_geno] <- calc_true_geno_prob(ind_geno = child_geno, true_geno = possible_children[real_geno,], allele_freqs = allele_freqs, error_1 = error_1, error_2 = error_2)
-            
-        }
-        
-        pr_child_given_real_geno <- sum(obs_geno_prob[real_geno] * (1/4)) # Prob observing the real geno given all possible true genos from the designated parental pairing
-        
-        # Prob observing this child given obs mom given true mom in spot 1 of the pairing and obs dad given true dad in spot 2 of the pairing
-        ll_child_given_mom_dad <- sum(log(prob_mom[colnames(prob_mom) == all_pairings[1,pairing]]), log(prob_dad[colnames(prob_dad) == all_pairings[2,pairing]]), log(pr_child_given_real_geno))
-        
-        # Prob observing this child given obs mom given true mom in spot 2 of the pairing and obs dad given true dad in spot 1 of the pairing
-        ll_child_given_dad_mom <- sum(log(prob_mom[colnames(prob_mom) == all_pairings[2,pairing]]), log(prob_dad[colnames(prob_dad) == all_pairings[1,pairing]]), log(pr_child_given_real_geno))
-        
-        ll_child_given_any_mom_dad[pairing] <- ll_child_given_mom_dad
-        
-        ll_child_given_any_mom_dad[pairing] <- ll_child_given_dad_mom
-    }
-    
-    total_ll_child_given_mom_dad <- log(sum(exp(ll_child_given_any_mom_dad)))
-    total_ll_child_given_dad_mom <- log(sum(exp(ll_child_given_any_mom_dad)))
-    total_ll_child_given_parents <- log(sum(exp(total_ll_child_given_dad_mom), exp(total_ll_child_given_mom_dad)))
+    total_ll_child_given_parents <- log(sum(colSums(exp(total_ll_child)))) # Sum across columns and rows which is the same as summing over all possible true parental genotypes
     
     return(total_ll_child_given_parents)
 }
 
 #unclear how to incorporate allele frequencies that differ at each loci
 get_ll <- function(children_data, parental_data, error_1, error_2) {
-    dad_data <- subset(parental_data, parental_data$Ind %notin% children_data$mom_ID) # Assumes a parent can only ever be a mother or a father
+    dad_data <- subset(parental_data, parental_data$Ind %notin% children_data$mom_ID) # Assumes a parent can only ever be a mother or a father (typically true in trees)
     
     # Make matrix to hold the output of the for loop below
     ll_O_given_one_DM <- matrix(nrow = nrow(dad_data), ncol = nrow(children_data), 
@@ -704,3 +656,7 @@ dad_ID <- dimnames(final_dad_avg_likelihoods)[[1]][dad_index] # Getting the name
 proportions(table(dad_ID == children_data$dad_ID)) # Getting proportion of correct dads to see how my algorithm does
 
 
+#stuff that I wrote to go inside the last function.... down here bc it didn't speed things up very much
+all_possible_mom_dad_loci_off_combos<- merge(crossing(children_data$mom_ID, dad_data$Ind, 1:num_loci), cbind(children_data$mom_ID, children_data$child_ID), by.x = "children_data$mom_ID", by.y="V1") #Makes a df where rows = unique combos of mom_dad_off_loci
+
+mapply(calc_pr_child, locus = all_possible_mom_dad_loci_off_combos$`1:num_loci`, mom_ID = all_possible_mom_dad_loci_off_combos$`children_data$mom_ID`, dad_ID = all_possible_mom_dad_loci_off_combos$`dad_data$Ind`, child_ID=all_possible_mom_dad_loci_off_combos$V2,  MoreArgs =  list(error_1 = error_1, error_2 = error_2))
